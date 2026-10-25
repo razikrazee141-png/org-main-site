@@ -1,0 +1,99 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    
+    --brand-blue: #125EA2;
+    --brand-green: #388E3C;
+    --brand-red: #ED2924;
+    --brand-amber: #FFA726;
+  }
+
+  html {
+    scroll-behavior: smooth;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  body {
+    font-family: var(--font-body);
+    background-color: #FAF9F6;
+    color: #0F172A;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-heading);
+    letter-spacing: -0.025em;
+  }
+
+  /* Accessible outline focus for keyboard users */
+  :focus-visible {
+    outline: 2px solid #125EA2;
+    outline-offset: 3px;
+  }
+}
+
+/* Glass & editorial surface utilities */
+.glass-nav {
+  background: rgba(250, 249, 246, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.85);
+}
+
+.dark-surface {
+  background: linear-gradient(145deg, #09101D 0%, #0F192C 50%, #16243E 100%);
+}
+
+.brand-blue-gradient {
+  background: linear-gradient(135deg, #125EA2 0%, #0D47A1 100%);
+}
+
+/* Restrained accent borders */
+.border-brand-subtle {
+  border-color: rgba(18, 94, 162, 0.15);
+}
+
+/* Custom subtle pattern overlay */
+.subtle-grid {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(18, 94, 162, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(18, 94, 162, 0.035) 1px, transparent 1px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.45s ease-out forwards;
+}
+
+/* Respect user's reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,38 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Diagnostic / Scratch files
+scratch/
+*.local
+
+# Dependencies
+node_modules/
+dist/
+dist-ssr/
+*.local
+
+# Environment variables (keep secrets safe)
+.env
+.env*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+Thumbs.db
+
+# Inquiries persistent data (don't commit live visitor messages)
+data/*.json
+!data/.gitkeep
