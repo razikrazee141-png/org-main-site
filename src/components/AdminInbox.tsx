@@ -11,7 +11,8 @@ import {
   RefreshCw, 
   ShieldCheck, 
   Key, 
-  AlertCircle 
+  AlertCircle,
+  Download
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
 
@@ -58,7 +59,13 @@ export const AdminInbox: React.FC = () => {
         throw new Error(`Failed to load inquiries (${res.status}). Please verify your security key or server status.`);
       }
 
-      const data = await res.json();
+      let data: any;
+      try {
+        data = await res.json();
+      } catch {
+        throw new Error(`Server returned non-JSON response (${res.status}). Please check API configuration.`);
+      }
+
       setInquiries(data.inquiries || []);
       setIsAuthenticated(true);
       localStorage.setItem('nextgen_admin_key', keyToUse);
@@ -72,6 +79,17 @@ export const AdminInbox: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleExport = () => {
+    if (inquiries.length === 0) return;
+    const blob = new Blob([JSON.stringify(inquiries, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `nextgen-inquiries-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
   };
 
   useEffect(() => {
@@ -162,12 +180,24 @@ export const AdminInbox: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
+          {isAuthenticated && inquiries.length > 0 && (
+            <button
+              type="button"
+              onClick={handleExport}
+              title="Download backup of all inquiries as JSON"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5 text-slate-500" />
+              <span className="hidden sm:inline">Export</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => fetchInquiries()}
             disabled={isLoading}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
             <span className="hidden sm:inline">Refresh</span>

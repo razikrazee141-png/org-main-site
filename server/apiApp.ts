@@ -1,4 +1,4 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, Router } from 'express';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
@@ -8,17 +8,40 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Detect Vercel / serverless runtime
+const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+
 // Persistent Data Storage setup
-const DATA_DIR = path.resolve(process.cwd(), 'data');
+const SEED_FILE = path.resolve(process.cwd(), 'data/inquiries.json');
+const DATA_DIR = isVercel ? path.join('/tmp', 'nextgen_data') : path.resolve(process.cwd(), 'data');
 const DATA_FILE = path.join(DATA_DIR, 'inquiries.json');
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
+// In-memory fallback cache
+let memoryCache: Inquiry[] | null = null;
+
+function initDataStore(): void {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(DATA_FILE)) {
+      if (isVercel && fs.existsSync(SEED_FILE)) {
+        try {
+          const seedContent = fs.readFileSync(SEED_FILE, 'utf-8');
+          fs.writeFileSync(DATA_FILE, seedContent, 'utf-8');
+        } catch {
+          fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), 'utf-8');
+        }
+      } else {
+        fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), 'utf-8');
+      }
+    }
+  } catch (err) {
+    console.warn('[NextGen Storage] Read-only or fallback to memory datastore:', err);
+  }
 }
 
-if (!fs.existsSync(DATA_FILE)) {
-  fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), 'utf-8');
-}
+initDataStore();
 
 export interface Inquiry {
   id: string;
@@ -35,18 +58,61 @@ export interface Inquiry {
 
 export function loadInquiries(): Inquiry[] {
   try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf-8');
-    return JSON.parse(raw) as Inquiry[];
+    initDataStore();
+    if (fs.existsSync(DATA_FILE)) {
+      const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+      const parsed = JSON.parse(raw) as Inquiry[];
+      memoryCache = parsed;
+      return parsed;
+    }
   } catch (err) {
-    console.error('Failed to read inquiries file:', err);
-    return [];
+    console.warn('[NextGen Storage] Error reading data file, using memory cache:', err);
   }
+  return memoryCache || [];
 }
 
 export function saveInquiry(inquiry: Inquiry): void {
   const inquiries = loadInquiries();
   inquiries.unshift(inquiry); // newest first
-  fs.writeFileSync(DATA_FILE, JSON.stringify(inquiries, null, 2), 'utf-8');
+  memoryCache = inquiries;
+  try {
+    initDataStore();
+    fs.writeFileSync(DATA_FILE, JSON.stringify(inquiries, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[NextGen Storage] Error persisting to disk, kept in memory cache:', err);
+  }
+}
+
+export function updateInquiryStatus(id: string, status: 'new' | 'reviewed' | 'responded'): Inquiry | null {
+  const inquiries = loadInquiries();
+  const target = inquiries.find((i) => i.id === id);
+  if (!target) return null;
+
+  target.status = status;
+  memoryCache = inquiries;
+  try {
+    initDataStore();
+    fs.writeFileSync(DATA_FILE, JSON.stringify(inquiries, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[NextGen Storage] Error writing status update:', err);
+  }
+  return target;
+}
+
+export function deleteInquiry(id: string): boolean {
+  let inquiries = loadInquiries();
+  const exists = inquiries.some((i) => i.id === id);
+  if (!exists) return false;
+
+  inquiries = inquiries.filter((i) => i.id !== id);
+  memoryCache = inquiries;
+  try {
+    initDataStore();
+    fs.writeFileSync(DATA_FILE, JSON.stringify(inquiries, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[NextGen Storage] Error writing deletion:', err);
+  }
+  return true;
 }
 
 // Optional Email Notification Forwarder
@@ -95,10 +161,10 @@ export async function sendNotificationEmail(inquiry: Inquiry): Promise<boolean> 
   }
 }
 
-// Rate limiting: 20 inquiries per 15 minutes per IP
+// Rate limiting: 25 inquiries per 15 minutes per IP
 const inquiryLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 20,
+  max: 25,
   standardHeaders: true,
   legacyHeaders: false,
   message: {
@@ -107,24 +173,22 @@ const inquiryLimiter = rateLimit({
   },
 });
 
-export const apiApp = express();
-
-// Middleware
-apiApp.use(express.json({ limit: '20kb' }));
-apiApp.use(cors());
+// Router definition that handles routes both with and without /api prefix
+const router = Router();
 
 // Health check endpoint
-apiApp.get('/api/contact/health', (_req: Request, res: Response) => {
+router.get('/contact/health', (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     service: 'NextGen Inquiry Gateway',
     timestamp: new Date().toISOString(),
+    isServerless: isVercel,
     inquiriesLogged: loadInquiries().length,
   });
 });
 
 // Primary Contact submission endpoint
-apiApp.post('/api/contact', inquiryLimiter, async (req: Request, res: Response): Promise<void> => {
+router.post('/contact', inquiryLimiter, async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, subject, message, bot_check } = req.body;
 
@@ -174,8 +238,8 @@ apiApp.post('/api/contact', inquiryLimiter, async (req: Request, res: Response):
 
     // 3. Construct unique inquiry record
     const inquiryId = `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const ip = req.ip || req.socket.remoteAddress || 'unknown';
-    const userAgent = req.headers['user-agent'] || 'unknown';
+    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || req.socket.remoteAddress || 'unknown';
+    const userAgent = (req.headers['user-agent'] as string) || 'unknown';
 
     const newInquiry: Inquiry = {
       id: inquiryId,
@@ -194,7 +258,7 @@ apiApp.post('/api/contact', inquiryLimiter, async (req: Request, res: Response):
     const emailSent = await sendNotificationEmail(newInquiry);
     newInquiry.emailNotificationSent = emailSent;
 
-    // 5. Persist inquiry to secure storage
+    // 5. Persist inquiry
     saveInquiry(newInquiry);
 
     console.log(`[NextGen Inquiries] Logged inquiry ${inquiryId} from ${newInquiry.name} <${newInquiry.email}> (Email notification: ${emailSent ? 'Delivered' : 'Datastore only'})`);
@@ -215,7 +279,7 @@ apiApp.post('/api/contact', inquiryLimiter, async (req: Request, res: Response):
 });
 
 // Admin Review endpoint (Protected by ADMIN_KEY)
-apiApp.get('/api/admin/inquiries', (req: Request, res: Response): void => {
+router.get('/admin/inquiries', (req: Request, res: Response): void => {
   const authHeader = req.headers.authorization;
   const adminKey = process.env.ADMIN_KEY || 'nextgen-admin-secret-2026';
 
@@ -236,7 +300,7 @@ apiApp.get('/api/admin/inquiries', (req: Request, res: Response): void => {
 });
 
 // Admin update status
-apiApp.patch('/api/admin/inquiries/:id', (req: Request, res: Response): void => {
+router.patch('/admin/inquiries/:id', (req: Request, res: Response): void => {
   const authHeader = req.headers.authorization;
   const adminKey = process.env.ADMIN_KEY || 'nextgen-admin-secret-2026';
 
@@ -246,24 +310,23 @@ apiApp.patch('/api/admin/inquiries/:id', (req: Request, res: Response): void => 
   }
 
   const { status } = req.body;
-  const inquiries = loadInquiries();
-  const target = inquiries.find((i) => i.id === req.params.id);
-
-  if (!target) {
-    res.status(404).json({ success: false, error: 'Inquiry not found' });
+  if (!status || !['new', 'reviewed', 'responded'].includes(status)) {
+    res.status(400).json({ success: false, error: 'Invalid status' });
     return;
   }
 
-  if (status && ['new', 'reviewed', 'responded'].includes(status)) {
-    target.status = status;
-    fs.writeFileSync(DATA_FILE, JSON.stringify(inquiries, null, 2), 'utf-8');
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const target = updateInquiryStatus(id, status);
+  if (!target) {
+    res.status(404).json({ success: false, error: 'Inquiry not found' });
+    return;
   }
 
   res.json({ success: true, inquiry: target });
 });
 
 // Admin delete inquiry
-apiApp.delete('/api/admin/inquiries/:id', (req: Request, res: Response): void => {
+router.delete('/admin/inquiries/:id', (req: Request, res: Response): void => {
   const authHeader = req.headers.authorization;
   const adminKey = process.env.ADMIN_KEY || 'nextgen-admin-secret-2026';
 
@@ -272,15 +335,23 @@ apiApp.delete('/api/admin/inquiries/:id', (req: Request, res: Response): void =>
     return;
   }
 
-  let inquiries = loadInquiries();
-  const exists = inquiries.some((i) => i.id === req.params.id);
-  if (!exists) {
+  const id = Array.isArray(req.params.id) ? req.params.id[0] : req.params.id;
+  const success = deleteInquiry(id);
+  if (!success) {
     res.status(404).json({ success: false, error: 'Inquiry not found' });
     return;
   }
 
-  inquiries = inquiries.filter((i) => i.id !== req.params.id);
-  fs.writeFileSync(DATA_FILE, JSON.stringify(inquiries, null, 2), 'utf-8');
-
   res.json({ success: true, message: 'Inquiry deleted' });
 });
+
+export const apiApp = express();
+
+// Middleware
+apiApp.use(express.json({ limit: '20kb' }));
+apiApp.use(cors());
+
+// Mount router on BOTH '/api' and '/'
+// This guarantees that whether Vercel passes '/api/admin/inquiries' or '/admin/inquiries', it matches!
+apiApp.use('/api', router);
+apiApp.use(router);
