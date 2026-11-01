@@ -1,4 +1,4 @@
-import { loadInquiries } from '../../../server/apiApp';
+import { loadInquiries } from '../../../server/inquiryStorage';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers?.authorization;
   const adminKey = process.env.ADMIN_KEY || 'nextgen-admin-secret-2026';
 
   if (!authHeader || authHeader !== `Bearer ${adminKey}`) {

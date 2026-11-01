@@ -1,4 +1,4 @@
-import { updateInquiryStatus, deleteInquiry } from '../../../server/apiApp';
+import { updateInquiryStatus, deleteInquiry } from '../../../server/inquiryStorage';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -11,7 +11,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const authHeader = req.headers.authorization;
+  const authHeader = req.headers?.authorization;
   const adminKey = process.env.ADMIN_KEY || 'nextgen-admin-secret-2026';
 
   if (!authHeader || authHeader !== `Bearer ${adminKey}`) {
@@ -24,7 +24,7 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const id = req.query?.id as string;
+  const id = (req.query?.id as string) || (req.url?.split('/').pop()?.split('?')[0]);
   if (!id) {
     res.statusCode = 400;
     res.setHeader('Content-Type', 'application/json');

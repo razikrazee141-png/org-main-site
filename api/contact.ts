@@ -1,4 +1,4 @@
-import { saveInquiry, sendNotificationEmail, Inquiry } from '../server/apiApp';
+import { saveInquiry, sendNotificationEmail, Inquiry } from '../server/inquiryStorage';
 
 export default async function handler(req: any, res: any) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -34,16 +34,16 @@ export default async function handler(req: any, res: any) {
         body = {};
       }
     }
-    if (!body && req.readable) {
-      const chunks: Buffer[] = [];
-      for await (const chunk of req) {
-        chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk);
-      }
-      try {
-        body = JSON.parse(Buffer.concat(chunks).toString('utf-8'));
-      } catch {
-        body = {};
-      }
+
+    if (!body && typeof req.on === 'function') {
+      body = await new Promise((resolve) => {
+        let raw = '';
+        req.on('data', (c: any) => { raw += c; });
+        req.on('end', () => {
+          try { resolve(JSON.parse(raw)); } catch { resolve({}); }
+        });
+        req.on('error', () => resolve({}));
+      });
     }
 
     const { name, email, subject, message, bot_check } = body || {};
@@ -87,8 +87,8 @@ export default async function handler(req: any, res: any) {
     }
 
     const inquiryId = `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-    const userAgent = (req.headers['user-agent'] as string) || 'unknown';
+    const ip = (req.headers && (req.headers['x-forwarded-for'] as string))?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
+    const userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'unknown';
 
     const newInquiry: Inquiry = {
       id: inquiryId,
