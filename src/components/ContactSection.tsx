@@ -83,13 +83,20 @@ export const ContactSection: React.FC = () => {
         }),
       });
 
-      const data = await response.json();
+      let data: any = null;
+      try {
+        data = await response.json();
+      } catch {
+        throw new Error(
+          `Unable to complete inquiry submission (HTTP ${response.status}). Please check network or contact NextGen directly at official.nextgenorg@gmail.com.`
+        );
+      }
 
       if (!response.ok) {
-        if (data.details) {
+        if (data?.details) {
           setErrors(data.details);
         }
-        throw new Error(data.error || 'Failed to submit inquiry.');
+        throw new Error(data?.error || 'Failed to submit inquiry.');
       }
 
       setInquiryResult({
