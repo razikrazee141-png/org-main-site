@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 import nodemailer from 'nodemailer';
 
 export interface Inquiry {
@@ -15,7 +16,7 @@ export interface Inquiry {
   emailNotificationSent: boolean;
 }
 
-const DATA_FILE = path.join('/tmp', 'nextgen_inquiries.json');
+const DATA_FILE = path.join(os.tmpdir(), 'nextgen_inquiries.json');
 const SEED_FILE = path.resolve(process.cwd(), 'data/inquiries.json');
 
 let memoryInquiries: Inquiry[] = [];
@@ -165,17 +166,14 @@ export default async function handler(req: any, res: any) {
   try {
     let body = req.body;
     if (typeof body === 'string') {
-      try { body = JSON.parse(body); } catch { body = {}; }
+      try {
+        body = JSON.parse(body);
+      } catch {
+        body = {};
+      }
     }
-    if (!body && typeof req.on === 'function') {
-      body = await new Promise((resolve) => {
-        let raw = '';
-        req.on('data', (c: any) => { raw += c; });
-        req.on('end', () => {
-          try { resolve(JSON.parse(raw)); } catch { resolve({}); }
-        });
-        req.on('error', () => resolve({}));
-      });
+    if (!body || typeof body !== 'object') {
+      body = {};
     }
 
     const { name, email, subject, message, bot_check } = body || {};
@@ -255,6 +253,7 @@ export default async function handler(req: any, res: any) {
     res.end(JSON.stringify({
       success: false,
       error: 'An internal error occurred while logging your message. Please try again shortly.',
+      detail: error?.message,
     }));
   }
 }

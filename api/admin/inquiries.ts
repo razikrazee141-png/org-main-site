@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 export interface Inquiry {
   id: string;
@@ -14,7 +15,7 @@ export interface Inquiry {
   emailNotificationSent: boolean;
 }
 
-const DATA_FILE = path.join('/tmp', 'nextgen_inquiries.json');
+const DATA_FILE = path.join(os.tmpdir(), 'nextgen_inquiries.json');
 const SEED_FILE = path.resolve(process.cwd(), 'data/inquiries.json');
 
 let memoryInquiries: Inquiry[] = [];
