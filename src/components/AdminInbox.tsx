@@ -66,13 +66,32 @@ export const AdminInbox: React.FC = () => {
         throw new Error(`Server returned non-JSON response (${res.status}). Please check API configuration.`);
       }
 
-      setInquiries(data.inquiries || []);
+      const serverList: StoredInquiry[] = data.inquiries || [];
+      let localList: StoredInquiry[] = [];
+      try {
+        localList = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
+      } catch {
+        localList = [];
+      }
+
+      // Merge server and local inquiries by unique ID, sorted newest first
+      const map = new Map<string, StoredInquiry>();
+      [...localList, ...serverList].forEach((item) => {
+        if (item?.id && !map.has(item.id)) {
+          map.set(item.id, item);
+        }
+      });
+      const merged = Array.from(map.values()).sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+
+      setInquiries(merged);
       setIsAuthenticated(true);
       localStorage.setItem('nextgen_admin_key', keyToUse);
 
       // Select first if none selected
-      if (!selectedInquiry && data.inquiries?.length > 0) {
-        setSelectedInquiry(data.inquiries[0]);
+      if (!selectedInquiry && merged.length > 0) {
+        setSelectedInquiry(merged[0]);
       }
     } catch (err: any) {
       setError(err.message || 'Error communicating with server.');
@@ -107,14 +126,19 @@ export const AdminInbox: React.FC = () => {
         body: JSON.stringify({ status: newStatus }),
       });
 
-      if (res.ok) {
-        setInquiries((prev) =>
-          prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
-        );
-        if (selectedInquiry?.id === id) {
-          setSelectedInquiry((prev) => (prev ? { ...prev, status: newStatus } : null));
-        }
+      setInquiries((prev) =>
+        prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
+      );
+      if (selectedInquiry?.id === id) {
+        setSelectedInquiry((prev) => (prev ? { ...prev, status: newStatus } : null));
       }
+
+      // Sync with localStorage
+      try {
+        const local = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
+        const updated = local.map((i: any) => (i.id === id ? { ...i, status: newStatus } : i));
+        localStorage.setItem('nextgen_local_inquiries', JSON.stringify(updated));
+      } catch {}
     } catch (err) {
       console.error('Failed to update status', err);
     }
@@ -130,12 +154,17 @@ export const AdminInbox: React.FC = () => {
         },
       });
 
-      if (res.ok) {
-        setInquiries((prev) => prev.filter((item) => item.id !== id));
-        if (selectedInquiry?.id === id) {
-          setSelectedInquiry(null);
-        }
+      setInquiries((prev) => prev.filter((item) => item.id !== id));
+      if (selectedInquiry?.id === id) {
+        setSelectedInquiry(null);
       }
+
+      // Sync with localStorage
+      try {
+        const local = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
+        const updated = local.filter((i: any) => i.id !== id);
+        localStorage.setItem('nextgen_local_inquiries', JSON.stringify(updated));
+      } catch {}
     } catch (err) {
       console.error('Failed to delete inquiry', err);
     }

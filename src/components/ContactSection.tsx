@@ -99,6 +99,26 @@ export const ContactSection: React.FC = () => {
         throw new Error(data?.error || 'Failed to submit inquiry.');
       }
 
+      // Store locally so the inquiry is immediately available to the admin portal
+      try {
+        const submittedItem = {
+          id: data.inquiryId || `NG-${Date.now().toString(36).toUpperCase()}`,
+          createdAt: data.timestamp || new Date().toISOString(),
+          name: formData.name.trim(),
+          email: formData.email.trim(),
+          subject: formData.subject.trim(),
+          message: formData.message.trim(),
+          status: 'new',
+          ip: 'browser',
+          emailNotificationSent: false,
+        };
+        const existing = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
+        const updated = [submittedItem, ...existing.filter((i: any) => i.id !== submittedItem.id)];
+        localStorage.setItem('nextgen_local_inquiries', JSON.stringify(updated.slice(0, 50)));
+      } catch (storageErr) {
+        console.warn('LocalStorage save skipped:', storageErr);
+      }
+
       setInquiryResult({
         inquiryId: data.inquiryId,
         message: data.message,
