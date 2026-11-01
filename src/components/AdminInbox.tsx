@@ -55,7 +55,7 @@ export const AdminInbox: React.FC = () => {
       }
 
       if (!res.ok) {
-        throw new Error(`Failed to load inquiries (${res.status})`);
+        throw new Error(`Failed to load inquiries (${res.status}). Please verify your security key or server status.`);
       }
 
       const data = await res.json();

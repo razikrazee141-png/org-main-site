@@ -147,9 +147,18 @@ export const ContactSection: React.FC = () => {
                     <span>{item.label}</span>
                   </div>
 
-                  <p className="text-base font-semibold text-slate-800">
-                    {item.value}
-                  </p>
+                  {item.label === 'Official Email' ? (
+                    <a
+                      href={`mailto:${item.value}`}
+                      className="block text-base font-semibold text-[#125EA2] hover:underline break-all"
+                    >
+                      {item.value}
+                    </a>
+                  ) : (
+                    <p className="text-base font-semibold text-slate-800 whitespace-pre-line leading-relaxed">
+                      {item.value}
+                    </p>
+                  )}
 
                   {item.isPlaceholder && (
                     <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-0.5 inline-block font-mono break-words max-w-full">

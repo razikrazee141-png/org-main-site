@@ -78,7 +78,10 @@ To access the inquiry management dashboard:
 ## 📍 Registered Office
 
 **NextGen Head Office**  
-Shivamogga, Karnataka, India  
+Area: By Pass Road, Beside Bharath Benz Showroom  
+Post: Urgadur, District: Shimoga  
+Pin: 577203, Karnataka - India  
+Official Email: official.nextgenorg@gmail.com  
 Operating Hours: Monday – Friday, 9:30 AM – 5:30 PM (IST)
 
 ---

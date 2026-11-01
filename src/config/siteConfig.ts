@@ -109,7 +109,7 @@ export const SITE_CONFIG = {
         id: 'akbar',
         name: 'Akbar',
         role: 'Director, NextGen',
-        image: '/directors/akbar.jpg',
+        image: '/directors/akbar.png',
       },
     ] as Director[],
   },
@@ -217,16 +217,16 @@ export const SITE_CONFIG = {
     details: [
       {
         label: 'Official Email',
-        value: 'contact@nextgen.org.in',
-        isPlaceholder: true,
-        placeholderNote: '[Official corporate email to be configured by administration]',
+        value: 'official.nextgenorg@gmail.com',
+        isPlaceholder: false,
+        placeholderNote: '',
         icon: 'Mail',
       },
       {
         label: 'Administrative Office',
-        value: 'NextGen Head Office, Shivamogga, Karnataka, India',
-        isPlaceholder: true,
-        placeholderNote: '[Official registered office address in Shivamogga, Karnataka]',
+        value: 'Area: By Pass Road, Beside Bharath Benz Showroom\nPost: Urgadur\nDistrict: Shimoga\nPin: 577203\nKarnataka - India',
+        isPlaceholder: false,
+        placeholderNote: '',
         icon: 'MapPin',
       },
       {
