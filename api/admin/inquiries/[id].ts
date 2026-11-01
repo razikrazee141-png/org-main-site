@@ -20,7 +20,28 @@ const DATA_FILE = path.join(DATA_DIR, 'inquiries.json');
 
 let memoryInquiries: Inquiry[] = [];
 
-function loadInquiries(): Inquiry[] {
+async function loadInquiries(): Promise<Inquiry[]> {
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (kvUrl && kvToken) {
+    try {
+      const res = await fetch(`${kvUrl}/get/nextgen_inquiries`, {
+        headers: { Authorization: `Bearer ${kvToken}` },
+      });
+      const data = await res.json();
+      if (data?.result) {
+        const parsed = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+        if (Array.isArray(parsed)) {
+          memoryInquiries = parsed;
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[KV Storage] Error reading:', err);
+    }
+  }
+
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -36,34 +57,55 @@ function loadInquiries(): Inquiry[] {
   } catch (err) {
     console.warn('[Storage] Fallback to memory:', err);
   }
+
   return memoryInquiries;
 }
 
-function updateInquiryStatus(id: string, status: 'new' | 'reviewed' | 'responded'): Inquiry | null {
-  const list = loadInquiries();
+async function persistInquiries(list: Inquiry[]): Promise<void> {
+  memoryInquiries = list;
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (kvUrl && kvToken) {
+    try {
+      await fetch(`${kvUrl}/set/nextgen_inquiries`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${kvToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(JSON.stringify(list)),
+      });
+    } catch (err) {
+      console.warn('[KV Storage] Error writing:', err);
+    }
+  }
+
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[Storage] File write skipped:', err);
+  }
+}
+
+async function updateInquiryStatus(id: string, status: 'new' | 'reviewed' | 'responded'): Promise<Inquiry | null> {
+  const list = await loadInquiries();
   const target = list.find((i) => i.id === id);
   if (!target) return null;
   target.status = status;
-  memoryInquiries = list;
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
-  } catch (err) {
-    console.warn('[Storage] Status update saved in memory:', err);
-  }
+  await persistInquiries(list);
   return target;
 }
 
-function deleteInquiry(id: string): boolean {
-  let list = loadInquiries();
+async function deleteInquiry(id: string): Promise<boolean> {
+  let list = await loadInquiries();
   const exists = list.some((i) => i.id === id);
   if (!exists) return false;
   list = list.filter((i) => i.id !== id);
-  memoryInquiries = list;
-  try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
-  } catch (err) {
-    console.warn('[Storage] Deletion applied in memory:', err);
-  }
+  await persistInquiries(list);
   return true;
 }
 
@@ -113,7 +155,7 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
-    const updated = updateInquiryStatus(id, status);
+    const updated = await updateInquiryStatus(id, status);
     if (!updated) {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'application/json');
@@ -128,7 +170,7 @@ export default async function handler(req: any, res: any) {
   }
 
   if (req.method === 'DELETE') {
-    const ok = deleteInquiry(id);
+    const ok = await deleteInquiry(id);
     if (!ok) {
       res.statusCode = 404;
       res.setHeader('Content-Type', 'application/json');

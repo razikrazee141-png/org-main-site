@@ -20,7 +20,30 @@ const DATA_FILE = path.join(DATA_DIR, 'inquiries.json');
 
 let memoryInquiries: Inquiry[] = [];
 
-function loadInquiries(): Inquiry[] {
+async function loadInquiries(): Promise<Inquiry[]> {
+  // 1. Try Vercel KV / Upstash Redis if configured
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (kvUrl && kvToken) {
+    try {
+      const res = await fetch(`${kvUrl}/get/nextgen_inquiries`, {
+        headers: { Authorization: `Bearer ${kvToken}` },
+      });
+      const data = await res.json();
+      if (data?.result) {
+        const parsed = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+        if (Array.isArray(parsed)) {
+          memoryInquiries = parsed;
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[KV Storage] Error reading, falling back to disk/memory:', err);
+    }
+  }
+
+  // 2. Fallback to /tmp disk
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -36,6 +59,7 @@ function loadInquiries(): Inquiry[] {
   } catch (err) {
     console.warn('[Storage] Fallback to memory:', err);
   }
+
   return memoryInquiries;
 }
 
@@ -64,7 +88,7 @@ export default async function handler(req: any, res: any) {
   }
 
   if (req.method === 'GET') {
-    const inquiries = loadInquiries();
+    const inquiries = await loadInquiries();
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({

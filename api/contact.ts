@@ -21,22 +21,34 @@ const DATA_FILE = path.join(DATA_DIR, 'inquiries.json');
 
 let memoryInquiries: Inquiry[] = [];
 
-function ensureDataFile(): void {
+async function loadInquiries(): Promise<Inquiry[]> {
+  // 1. Try Vercel KV / Upstash Redis if configured
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (kvUrl && kvToken) {
+    try {
+      const res = await fetch(`${kvUrl}/get/nextgen_inquiries`, {
+        headers: { Authorization: `Bearer ${kvToken}` },
+      });
+      const data = await res.json();
+      if (data?.result) {
+        const parsed = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+        if (Array.isArray(parsed)) {
+          memoryInquiries = parsed;
+          return parsed;
+        }
+      }
+    } catch (err) {
+      console.warn('[KV Storage] Error reading, falling back to disk/memory:', err);
+    }
+  }
+
+  // 2. Fallback to /tmp disk
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
-    if (!fs.existsSync(DATA_FILE)) {
-      fs.writeFileSync(DATA_FILE, JSON.stringify([], null, 2), 'utf-8');
-    }
-  } catch (err) {
-    console.warn('[Storage] Notice:', err);
-  }
-}
-
-function loadInquiries(): Inquiry[] {
-  try {
-    ensureDataFile();
     if (fs.existsSync(DATA_FILE)) {
       const raw = fs.readFileSync(DATA_FILE, 'utf-8');
       const list = JSON.parse(raw);
@@ -48,15 +60,39 @@ function loadInquiries(): Inquiry[] {
   } catch (err) {
     console.warn('[Storage] Fallback to memory:', err);
   }
+
   return memoryInquiries;
 }
 
-function saveInquiry(inquiry: Inquiry): void {
-  const list = loadInquiries();
+async function saveInquiry(inquiry: Inquiry): Promise<void> {
+  const list = await loadInquiries();
   list.unshift(inquiry);
   memoryInquiries = list;
+
+  // 1. Persist to Vercel KV if configured
+  const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
+  const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (kvUrl && kvToken) {
+    try {
+      await fetch(`${kvUrl}/set/nextgen_inquiries`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${kvToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(JSON.stringify(list)),
+      });
+    } catch (err) {
+      console.warn('[KV Storage] Error persisting to KV:', err);
+    }
+  }
+
+  // 2. Persist to /tmp disk
   try {
-    ensureDataFile();
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
     fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
   } catch (err) {
     console.warn('[Storage] File write skipped, preserved in memory:', err);
@@ -80,7 +116,19 @@ async function sendNotificationEmail(inquiry: Inquiry): Promise<boolean> {
       to: NOTIFICATION_EMAIL,
       replyTo: `"${inquiry.name}" <${inquiry.email}>`,
       subject: `[NextGen Inquiry] ${inquiry.subject}`,
-      text: `From: ${inquiry.name} (${inquiry.email})\nSubject: ${inquiry.subject}\n\nMessage:\n${inquiry.message}\n`,
+      text: `New official query received on NextGen corporate website.\n\nFrom: ${inquiry.name} (${inquiry.email})\nSubject: ${inquiry.subject}\nReceived: ${inquiry.createdAt}\nInquiry ID: ${inquiry.id}\n\nMessage:\n${inquiry.message}\n`,
+      html: `
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
+          <h2 style="color: #125EA2; margin-top: 0;">NextGen Official Inquiry</h2>
+          <p><strong>From:</strong> ${inquiry.name} (<a href="mailto:${inquiry.email}">${inquiry.email}</a>)</p>
+          <p><strong>Subject:</strong> ${inquiry.subject}</p>
+          <p><strong>Date:</strong> ${inquiry.createdAt}</p>
+          <p><strong>Inquiry ID:</strong> <code>${inquiry.id}</code></p>
+          <hr style="border: 0; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
+          <h4 style="color: #334155;">Message Content:</h4>
+          <p style="white-space: pre-wrap; background: #f8fafc; padding: 15px; border-radius: 8px; color: #1e293b;">${inquiry.message}</p>
+        </div>
+      `,
     });
     return true;
   } catch (err) {
@@ -195,7 +243,7 @@ export default async function handler(req: any, res: any) {
     const emailSent = await sendNotificationEmail(newInquiry);
     newInquiry.emailNotificationSent = emailSent;
 
-    saveInquiry(newInquiry);
+    await saveInquiry(newInquiry);
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
