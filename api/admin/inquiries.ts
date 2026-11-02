@@ -8,6 +8,7 @@ export interface Inquiry {
   createdAt: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   ip: string;
@@ -49,6 +50,7 @@ async function loadInquiries(): Promise<Inquiry[]> {
           createdAt: row.created_at || row.createdAt || new Date().toISOString(),
           name: String(row.name || ''),
           email: String(row.email || ''),
+          phone: row.phone ? String(row.phone) : undefined,
           subject: String(row.subject || ''),
           message: String(row.message || ''),
           ip: String(row.ip || 'web'),

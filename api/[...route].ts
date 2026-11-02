@@ -8,6 +8,7 @@ export interface Inquiry {
   createdAt: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   ip: string;
@@ -52,6 +53,7 @@ async function loadInquiries(): Promise<Inquiry[]> {
           createdAt: row.created_at || row.createdAt || new Date().toISOString(),
           name: String(row.name || ''),
           email: String(row.email || ''),
+          phone: row.phone ? String(row.phone) : undefined,
           subject: String(row.subject || ''),
           message: String(row.message || ''),
           ip: String(row.ip || 'web'),
@@ -154,11 +156,12 @@ async function sendNotificationEmail(inquiry: Inquiry): Promise<boolean> {
       to: NOTIFICATION_EMAIL,
       replyTo: `"${inquiry.name}" <${inquiry.email}>`,
       subject: `[NextGen Inquiry] ${inquiry.subject}`,
-      text: `New official query received on NextGen corporate website.\n\nFrom: ${inquiry.name} (${inquiry.email})\nSubject: ${inquiry.subject}\nReceived: ${inquiry.createdAt}\nInquiry ID: ${inquiry.id}\n\nMessage:\n${inquiry.message}\n`,
+      text: `New official query received on NextGen corporate website.\n\nFrom: ${inquiry.name} (${inquiry.email})\nPhone: ${inquiry.phone || 'Not provided'}\nSubject: ${inquiry.subject}\nReceived: ${inquiry.createdAt}\nInquiry ID: ${inquiry.id}\n\nMessage:\n${inquiry.message}\n`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px;">
           <h2 style="color: #125EA2; margin-top: 0;">NextGen Official Inquiry</h2>
           <p><strong>From:</strong> ${inquiry.name} (<a href="mailto:${inquiry.email}">${inquiry.email}</a>)</p>
+          ${inquiry.phone ? `<p><strong>Phone:</strong> <a href="tel:${inquiry.phone}">${inquiry.phone}</a></p>` : ''}
           <p><strong>Subject:</strong> ${inquiry.subject}</p>
           <p><strong>Date:</strong> ${inquiry.createdAt}</p>
           <p><strong>Inquiry ID:</strong> <code>${inquiry.id}</code></p>
@@ -222,7 +225,7 @@ export default async function handler(req: any, res: any) {
           });
         }
 
-        const { name, email, subject, message, bot_check } = body || {};
+        const { name, email, phone, subject, message, bot_check } = body || {};
 
         if (bot_check && String(bot_check).trim().length > 0) {
           res.statusCode = 200;
@@ -241,6 +244,13 @@ export default async function handler(req: any, res: any) {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         if (!email || typeof email !== 'string' || !emailRegex.test(email.trim())) {
           errors.email = 'A valid email address is required (e.g. name@domain.com).';
+        }
+
+        if (phone && typeof phone === 'string' && phone.trim().length > 0) {
+          const digits = phone.replace(/\D/g, '');
+          if (digits.length < 7 || phone.trim().length > 25) {
+            errors.phone = 'Please provide a valid phone number (at least 7 digits).';
+          }
         }
 
         if (!subject || typeof subject !== 'string' || subject.trim().length < 2) {
@@ -273,6 +283,7 @@ export default async function handler(req: any, res: any) {
           createdAt: new Date().toISOString(),
           name: name.trim(),
           email: email.trim().toLowerCase(),
+          phone: phone && typeof phone === 'string' && phone.trim().length > 0 ? phone.trim() : undefined,
           subject: subject.trim(),
           message: message.trim(),
           ip,
@@ -297,6 +308,7 @@ export default async function handler(req: any, res: any) {
               created_at: newInquiry.createdAt,
               name: newInquiry.name,
               email: newInquiry.email,
+              phone: newInquiry.phone || null,
               subject: newInquiry.subject,
               message: newInquiry.message,
               ip: newInquiry.ip,

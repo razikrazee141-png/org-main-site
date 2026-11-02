@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles, Database } from 'lucide-react';
+import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles, Database, Phone } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { isSupabaseConfigured, submitInquiryToSupabase } from '../lib/supabase';
 
 interface FormData {
   name: string;
   email: string;
+  phone: string;
   subject: string;
   message: string;
 }
@@ -13,6 +14,7 @@ interface FormData {
 interface FormErrors {
   name?: string;
   email?: string;
+  phone?: string;
   subject?: string;
   message?: string;
 }
@@ -23,6 +25,7 @@ export const ContactSection: React.FC = () => {
   const [formData, setFormData] = useState<FormData>({
     name: '',
     email: '',
+    phone: '',
     subject: '',
     message: '',
   });
@@ -46,6 +49,15 @@ export const ContactSection: React.FC = () => {
       newErrors.email = 'Please provide your email address.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
       newErrors.email = 'Please provide a valid email format (e.g. name@domain.com).';
+    }
+
+    if (!formData.phone.trim()) {
+      newErrors.phone = 'Please provide your contact phone number.';
+    } else {
+      const digits = formData.phone.replace(/\D/g, '');
+      if (digits.length < 7 || formData.phone.trim().length > 25) {
+        newErrors.phone = 'Please provide a valid phone number (at least 7 digits).';
+      }
     }
 
     if (!formData.subject.trim()) {
@@ -83,6 +95,7 @@ export const ContactSection: React.FC = () => {
             id: generatedId,
             name: formData.name.trim(),
             email: formData.email.trim(),
+            phone: formData.phone.trim(),
             subject: formData.subject.trim(),
             message: formData.message.trim(),
             ip: 'web',
@@ -108,6 +121,7 @@ export const ContactSection: React.FC = () => {
             id: inquiryId,
             name: formData.name.trim(),
             email: formData.email.trim(),
+            phone: formData.phone.trim(),
             subject: formData.subject.trim(),
             message: formData.message.trim(),
             bot_check: botCheck,
@@ -140,6 +154,7 @@ export const ContactSection: React.FC = () => {
           createdAt: new Date().toISOString(),
           name: formData.name.trim(),
           email: formData.email.trim(),
+          phone: formData.phone.trim(),
           subject: formData.subject.trim(),
           message: formData.message.trim(),
           status: 'new',
@@ -158,7 +173,7 @@ export const ContactSection: React.FC = () => {
         message: serverMessage,
       });
       setStatus('success');
-      setFormData({ name: '', email: '', subject: '', message: '' });
+      setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       setErrors({});
     } catch (err: any) {
       console.error('Inquiry transmission failed:', err);
@@ -203,6 +218,7 @@ export const ContactSection: React.FC = () => {
                 >
                   <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
                     {item.label === 'Official Email' && <Mail className="w-4 h-4 text-[#125EA2]" />}
+                    {(item.label.includes('Phone') || item.label.includes('Contact')) && <Phone className="w-4 h-4 text-[#125EA2]" />}
                     {item.label === 'Administrative Office' && <MapPin className="w-4 h-4 text-[#388E3C]" />}
                     {item.label === 'Operating Hours' && <Clock className="w-4 h-4 text-[#FFA726]" />}
                     <span>{item.label}</span>
@@ -211,6 +227,13 @@ export const ContactSection: React.FC = () => {
                   {item.label === 'Official Email' ? (
                     <a
                       href={`mailto:${item.value}`}
+                      className="block text-base font-semibold text-[#125EA2] hover:underline break-all"
+                    >
+                      {item.value}
+                    </a>
+                  ) : item.label.includes('Phone') ? (
+                    <a
+                      href={`tel:${item.value.replace(/\s+/g, '')}`}
                       className="block text-base font-semibold text-[#125EA2] hover:underline break-all"
                     >
                       {item.value}
@@ -304,34 +327,35 @@ export const ContactSection: React.FC = () => {
                     </div>
                   )}
                   
-                  {/* Name and Email Row */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div>
-                      <label htmlFor="contact-name" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Full Name <span className="text-red-500">*</span>
-                      </label>
-                      <input
-                        id="contact-name"
-                        type="text"
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="e.g. Ayesha Rahman"
-                        className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
-                          errors.name
-                            ? 'border-red-400 focus:ring-red-200'
-                            : 'border-slate-200 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
-                        }`}
-                        aria-invalid={!!errors.name}
-                        aria-describedby={errors.name ? 'name-error' : undefined}
-                      />
-                      {errors.name && (
-                        <p id="name-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                          <span>{errors.name}</span>
-                        </p>
-                      )}
-                    </div>
+                  {/* Full Name Input */}
+                  <div>
+                    <label htmlFor="contact-name" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      id="contact-name"
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      placeholder="e.g. Ayesha Rahman"
+                      className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
+                        errors.name
+                          ? 'border-red-400 focus:ring-red-200'
+                          : 'border-slate-200 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
+                      }`}
+                      aria-invalid={!!errors.name}
+                      aria-describedby={errors.name ? 'name-error' : undefined}
+                    />
+                    {errors.name && (
+                      <p id="name-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                        <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                        <span>{errors.name}</span>
+                      </p>
+                    )}
+                  </div>
 
+                  {/* Email and Phone Row */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div>
                       <label htmlFor="contact-email" className="block text-xs font-semibold text-slate-700 mb-1.5">
                         Email Address <span className="text-red-500">*</span>
@@ -354,6 +378,32 @@ export const ContactSection: React.FC = () => {
                         <p id="email-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
                           <AlertCircle className="w-3.5 h-3.5 shrink-0" />
                           <span>{errors.email}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <label htmlFor="contact-phone" className="block text-xs font-semibold text-slate-700 mb-1.5">
+                        Phone Number <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        id="contact-phone"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                        placeholder="e.g. +91 98765 43210"
+                        className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
+                          errors.phone
+                            ? 'border-red-400 focus:ring-red-200'
+                            : 'border-slate-200 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
+                        }`}
+                        aria-invalid={!!errors.phone}
+                        aria-describedby={errors.phone ? 'phone-error' : undefined}
+                      />
+                      {errors.phone && (
+                        <p id="phone-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{errors.phone}</span>
                         </p>
                       )}
                     </div>

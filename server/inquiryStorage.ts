@@ -8,6 +8,7 @@ export interface Inquiry {
   createdAt: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   ip: string;
@@ -92,6 +93,7 @@ export async function loadInquiriesAsync(): Promise<Inquiry[]> {
           createdAt: row.created_at || row.createdAt || new Date().toISOString(),
           name: String(row.name || ''),
           email: String(row.email || ''),
+          phone: row.phone ? String(row.phone) : undefined,
           subject: String(row.subject || ''),
           message: String(row.message || ''),
           ip: String(row.ip || 'web'),
@@ -139,6 +141,7 @@ export function saveInquiry(inquiry: Inquiry): void {
           created_at: inquiry.createdAt,
           name: inquiry.name,
           email: inquiry.email,
+          phone: inquiry.phone || null,
           subject: inquiry.subject,
           message: inquiry.message,
           ip: inquiry.ip,
@@ -235,7 +238,7 @@ export async function sendNotificationEmail(inquiry: Inquiry): Promise<boolean> 
       to: NOTIFICATION_EMAIL,
       replyTo: `"${inquiry.name}" <${inquiry.email}>`,
       subject: `[NextGen Inquiry] ${inquiry.subject}`,
-      text: `From: ${inquiry.name} (${inquiry.email})\nSubject: ${inquiry.subject}\n\nMessage:\n${inquiry.message}\n`,
+      text: `From: ${inquiry.name} (${inquiry.email})\nPhone: ${inquiry.phone || 'Not provided'}\nSubject: ${inquiry.subject}\n\nMessage:\n${inquiry.message}\n`,
     });
     return true;
   } catch (err) {

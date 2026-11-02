@@ -5,6 +5,7 @@ export interface InquiryRecord {
   createdAt: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   ip: string;
@@ -121,6 +122,7 @@ export function normalizeInquiry(row: any): InquiryRecord {
     createdAt: row.created_at || row.createdAt || new Date().toISOString(),
     name: String(row.name || ''),
     email: String(row.email || ''),
+    phone: row.phone ? String(row.phone) : undefined,
     subject: String(row.subject || ''),
     message: String(row.message || ''),
     ip: String(row.ip || 'web'),
@@ -195,6 +197,7 @@ export async function submitInquiryToSupabase(data: {
   id?: string;
   name: string;
   email: string;
+  phone?: string;
   subject: string;
   message: string;
   ip?: string;
@@ -217,6 +220,7 @@ export async function submitInquiryToSupabase(data: {
     created_at: new Date().toISOString(),
     name: data.name.trim(),
     email: data.email.trim().toLowerCase(),
+    phone: data.phone?.trim() || null,
     subject: data.subject.trim(),
     message: data.message.trim(),
     ip: data.ip || 'web',
@@ -338,6 +342,7 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   name TEXT NOT NULL,
   email TEXT NOT NULL,
+  phone TEXT,
   subject TEXT NOT NULL,
   message TEXT NOT NULL,
   ip TEXT DEFAULT 'web',
@@ -346,9 +351,13 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
   email_notification_sent BOOLEAN DEFAULT FALSE
 );
 
+-- Ensure phone column exists if table was created previously
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS phone TEXT;
+
 -- 2. Indexes
 CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON public.inquiries (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_inquiries_status ON public.inquiries (status);
+CREATE INDEX IF NOT EXISTS idx_inquiries_phone ON public.inquiries (phone);
 
 -- 3. Row Level Security
 ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;

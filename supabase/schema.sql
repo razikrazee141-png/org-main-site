@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
   created_at TIMESTAMPTZ DEFAULT NOW(),
   name TEXT NOT NULL,
   email TEXT NOT NULL,
+  phone TEXT,
   subject TEXT NOT NULL,
   message TEXT NOT NULL,
   ip TEXT DEFAULT 'web',
@@ -17,10 +18,14 @@ CREATE TABLE IF NOT EXISTS public.inquiries (
   email_notification_sent BOOLEAN DEFAULT FALSE
 );
 
+-- Ensure phone column exists for previously created inquiries tables
+ALTER TABLE public.inquiries ADD COLUMN IF NOT EXISTS phone TEXT;
+
 -- 2. Create indexes for quick search and sorting
 CREATE INDEX IF NOT EXISTS idx_inquiries_created_at ON public.inquiries (created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_inquiries_status ON public.inquiries (status);
 CREATE INDEX IF NOT EXISTS idx_inquiries_email ON public.inquiries (email);
+CREATE INDEX IF NOT EXISTS idx_inquiries_phone ON public.inquiries (phone);
 
 -- 3. Enable Row Level Security (RLS)
 ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;

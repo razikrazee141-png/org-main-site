@@ -21,7 +21,9 @@ import {
   X,
   Radio,
   LogOut,
-  Lock
+  Lock,
+  Phone,
+  PhoneCall
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
 import {
@@ -351,6 +353,7 @@ export const AdminInbox: React.FC = () => {
     const matchesSearch =
       inq.name.toLowerCase().includes(term) ||
       inq.email.toLowerCase().includes(term) ||
+      (inq.phone && inq.phone.toLowerCase().includes(term)) ||
       inq.subject.toLowerCase().includes(term) ||
       inq.message.toLowerCase().includes(term) ||
       inq.id.toLowerCase().includes(term);
@@ -586,6 +589,13 @@ export const AdminInbox: React.FC = () => {
                           </span>
                         </div>
 
+                        {inq.phone && (
+                          <div className="flex items-center gap-1.5 text-[11px] text-slate-500 mb-1">
+                            <Phone className="w-3 h-3 text-[#125EA2] shrink-0" />
+                            <span className="font-mono truncate">{inq.phone}</span>
+                          </div>
+                        )}
+
                         <p className="text-xs font-semibold text-slate-700 truncate mb-1">
                           {inq.subject}
                         </p>
@@ -658,7 +668,7 @@ export const AdminInbox: React.FC = () => {
                     </div>
 
                     {/* Sender Profile */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/60 text-xs">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/60 text-xs">
                       <div>
                         <span className="text-slate-400 font-semibold block text-[10px] uppercase tracking-wider">
                           Sender Name
@@ -671,10 +681,26 @@ export const AdminInbox: React.FC = () => {
                         </span>
                         <a
                           href={`mailto:${selectedInquiry.email}?subject=Re: ${encodeURIComponent(selectedInquiry.subject)}`}
-                          className="font-semibold text-[#125EA2] hover:underline"
+                          className="font-semibold text-[#125EA2] hover:underline break-all"
                         >
                           {selectedInquiry.email}
                         </a>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[10px] uppercase tracking-wider">
+                          Phone Number
+                        </span>
+                        {selectedInquiry.phone ? (
+                          <a
+                            href={`tel:${selectedInquiry.phone}`}
+                            className="font-semibold text-[#125EA2] hover:underline inline-flex items-center gap-1.5"
+                          >
+                            <Phone className="w-3.5 h-3.5 text-[#125EA2]" />
+                            <span>{selectedInquiry.phone}</span>
+                          </a>
+                        ) : (
+                          <span className="text-slate-400 italic">Not provided</span>
+                        )}
                       </div>
                       <div>
                         <span className="text-slate-400 font-semibold block text-[10px] uppercase tracking-wider">
@@ -707,13 +733,25 @@ export const AdminInbox: React.FC = () => {
 
                   {/* Actions Bar */}
                   <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <a
-                      href={`mailto:${selectedInquiry.email}?subject=Re: NextGen Inquiry: ${encodeURIComponent(selectedInquiry.subject)}`}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#125EA2] text-white font-semibold hover:bg-[#0E4F8B] transition-colors cursor-pointer"
-                    >
-                      <Reply className="w-3.5 h-3.5" />
-                      <span>Reply via Email Client</span>
-                    </a>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <a
+                        href={`mailto:${selectedInquiry.email}?subject=Re: NextGen Inquiry: ${encodeURIComponent(selectedInquiry.subject)}`}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#125EA2] text-white font-semibold hover:bg-[#0E4F8B] transition-colors cursor-pointer"
+                      >
+                        <Reply className="w-3.5 h-3.5" />
+                        <span>Reply via Email</span>
+                      </a>
+
+                      {selectedInquiry.phone && (
+                        <a
+                          href={`tel:${selectedInquiry.phone}`}
+                          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors cursor-pointer"
+                        >
+                          <PhoneCall className="w-3.5 h-3.5" />
+                          <span>Call {selectedInquiry.phone}</span>
+                        </a>
+                      )}
+                    </div>
 
                     <div className="flex items-center gap-2">
                       <span className="text-slate-400 text-xs font-medium">Update Status:</span>

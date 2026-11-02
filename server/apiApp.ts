@@ -30,7 +30,7 @@ router.get('/contact/health', (_req: Request, res: Response) => {
 // Primary Contact submission endpoint
 router.post('/contact', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, subject, message, bot_check } = req.body || {};
+    const { name, email, phone, subject, message, bot_check } = req.body || {};
 
     if (bot_check && String(bot_check).trim().length > 0) {
       res.status(200).json({
@@ -51,6 +51,13 @@ router.post('/contact', async (req: Request, res: Response): Promise<void> => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email || typeof email !== 'string' || !emailRegex.test(email.trim())) {
       errors.email = 'A valid email address is required (e.g. name@domain.com).';
+    }
+
+    if (phone && typeof phone === 'string' && phone.trim().length > 0) {
+      const digits = phone.replace(/\D/g, '');
+      if (digits.length < 7 || phone.trim().length > 25) {
+        errors.phone = 'Please provide a valid phone number (at least 7 digits).';
+      }
     }
 
     if (!subject || typeof subject !== 'string' || subject.trim().length < 2) {
@@ -83,6 +90,7 @@ router.post('/contact', async (req: Request, res: Response): Promise<void> => {
       createdAt: new Date().toISOString(),
       name: name.trim(),
       email: email.trim().toLowerCase(),
+      phone: phone && typeof phone === 'string' && phone.trim().length > 0 ? phone.trim() : undefined,
       subject: subject.trim(),
       message: message.trim(),
       ip,
