@@ -2,6 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 import nodemailer from 'nodemailer';
+import { getSupabaseServer } from './_supabase';
 
 export interface Inquiry {
   id: string;
@@ -34,6 +35,35 @@ try {
 }
 
 async function loadInquiries(): Promise<Inquiry[]> {
+  const sb = getSupabaseServer();
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('inquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const mapped: Inquiry[] = data.map((row: any) => ({
+          id: String(row.id),
+          createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+          name: String(row.name || ''),
+          email: String(row.email || ''),
+          subject: String(row.subject || ''),
+          message: String(row.message || ''),
+          ip: String(row.ip || 'web'),
+          userAgent: row.user_agent || row.userAgent || undefined,
+          status: row.status === 'reviewed' || row.status === 'responded' ? row.status : 'new',
+          emailNotificationSent: Boolean(row.email_notification_sent ?? row.emailNotificationSent ?? false),
+        }));
+        memoryInquiries = mapped;
+        return mapped;
+      }
+    } catch (err) {
+      console.warn('[Supabase Storage] Error reading:', err);
+    }
+  }
+
   const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
   if (kvUrl && kvToken) {
@@ -72,8 +102,29 @@ async function loadInquiries(): Promise<Inquiry[]> {
 
 async function saveInquiry(inquiry: Inquiry): Promise<void> {
   const list = await loadInquiries();
-  list.unshift(inquiry);
-  memoryInquiries = list;
+  const filtered = list.filter((i) => i.id !== inquiry.id);
+  filtered.unshift(inquiry);
+  memoryInquiries = filtered;
+
+  const sb = getSupabaseServer();
+  if (sb) {
+    try {
+      await sb.from('inquiries').upsert({
+        id: inquiry.id,
+        created_at: inquiry.createdAt,
+        name: inquiry.name,
+        email: inquiry.email,
+        subject: inquiry.subject,
+        message: inquiry.message,
+        ip: inquiry.ip,
+        user_agent: inquiry.userAgent,
+        status: inquiry.status,
+        email_notification_sent: inquiry.emailNotificationSent,
+      });
+    } catch (err) {
+      console.warn('[Supabase Serverless] Error writing:', err);
+    }
+  }
 
   const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -85,7 +136,7 @@ async function saveInquiry(inquiry: Inquiry): Promise<void> {
           Authorization: `Bearer ${kvToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(JSON.stringify(list)),
+        body: JSON.stringify(JSON.stringify(filtered)),
       });
     } catch (err) {
       console.warn('[KV Storage] Error writing:', err);
@@ -93,7 +144,7 @@ async function saveInquiry(inquiry: Inquiry): Promise<void> {
   }
 
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
+    fs.writeFileSync(DATA_FILE, JSON.stringify(filtered, null, 2), 'utf-8');
   } catch (err) {
     console.warn('[Storage] File write error:', err);
   }
@@ -216,7 +267,9 @@ export default async function handler(req: any, res: any) {
       return;
     }
 
-    const inquiryId = `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    const inquiryId = (body.id && String(body.id).trim().length > 0)
+      ? String(body.id).trim()
+      : `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     const ip = (req.headers && (req.headers['x-forwarded-for'] as string))?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
     const userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'unknown';
 

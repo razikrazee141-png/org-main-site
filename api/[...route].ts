@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import nodemailer from 'nodemailer';
+import { getSupabaseServer } from './_supabase';
 
 export interface Inquiry {
   id: string;
@@ -37,6 +38,35 @@ try {
 }
 
 async function loadInquiries(): Promise<Inquiry[]> {
+  const sb = getSupabaseServer();
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('inquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const mapped: Inquiry[] = data.map((row: any) => ({
+          id: String(row.id),
+          createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+          name: String(row.name || ''),
+          email: String(row.email || ''),
+          subject: String(row.subject || ''),
+          message: String(row.message || ''),
+          ip: String(row.ip || 'web'),
+          userAgent: row.user_agent || row.userAgent || undefined,
+          status: row.status === 'reviewed' || row.status === 'responded' ? row.status : 'new',
+          emailNotificationSent: Boolean(row.email_notification_sent ?? row.emailNotificationSent ?? false),
+        }));
+        memoryInquiries = mapped;
+        return mapped;
+      }
+    } catch (err) {
+      console.warn('[Supabase Storage] Error reading:', err);
+    }
+  }
+
   // 1. Try Vercel KV if available
   const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -232,7 +262,9 @@ export default async function handler(req: any, res: any) {
           return;
         }
 
-        const inquiryId = `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+        const inquiryId = (body.id && String(body.id).trim().length > 0)
+          ? String(body.id).trim()
+          : `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
         const ip = (req.headers && (req.headers['x-forwarded-for'] as string))?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
         const userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'unknown';
 
@@ -253,8 +285,29 @@ export default async function handler(req: any, res: any) {
         newInquiry.emailNotificationSent = emailSent;
 
         const currentList = await loadInquiries();
-        currentList.unshift(newInquiry);
-        await persistInquiries(currentList);
+        const filteredList = currentList.filter((i) => i.id !== newInquiry.id);
+        filteredList.unshift(newInquiry);
+        await persistInquiries(filteredList);
+
+        const sb = getSupabaseServer();
+        if (sb) {
+          try {
+            await sb.from('inquiries').upsert({
+              id: newInquiry.id,
+              created_at: newInquiry.createdAt,
+              name: newInquiry.name,
+              email: newInquiry.email,
+              subject: newInquiry.subject,
+              message: newInquiry.message,
+              ip: newInquiry.ip,
+              user_agent: newInquiry.userAgent,
+              status: newInquiry.status,
+              email_notification_sent: newInquiry.emailNotificationSent,
+            });
+          } catch (e) {
+            console.warn('[Supabase Catch-all Route] upsert error:', e);
+          }
+        }
 
         res.statusCode = 200;
         res.setHeader('Content-Type', 'application/json');
@@ -345,6 +398,15 @@ export default async function handler(req: any, res: any) {
       target.status = status;
       await persistInquiries(list);
 
+      const sb = getSupabaseServer();
+      if (sb) {
+        try {
+          await sb.from('inquiries').update({ status }).eq('id', id);
+        } catch (e) {
+          console.warn('[Supabase Catch-all Route] update error:', e);
+        }
+      }
+
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');
       res.end(JSON.stringify({ success: true, inquiry: target }));
@@ -370,6 +432,15 @@ export default async function handler(req: any, res: any) {
 
       const filtered = list.filter((i) => i.id !== id);
       await persistInquiries(filtered);
+
+      const sb = getSupabaseServer();
+      if (sb) {
+        try {
+          await sb.from('inquiries').delete().eq('id', id);
+        } catch (e) {
+          console.warn('[Supabase Catch-all Route] delete error:', e);
+        }
+      }
 
       res.statusCode = 200;
       res.setHeader('Content-Type', 'application/json');

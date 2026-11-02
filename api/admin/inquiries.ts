@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import os from 'os';
+import { getSupabaseServer } from './_supabase';
 
 export interface Inquiry {
   id: string;
@@ -34,6 +35,35 @@ try {
 }
 
 async function loadInquiries(): Promise<Inquiry[]> {
+  const sb = getSupabaseServer();
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('inquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const mapped: Inquiry[] = data.map((row: any) => ({
+          id: String(row.id),
+          createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+          name: String(row.name || ''),
+          email: String(row.email || ''),
+          subject: String(row.subject || ''),
+          message: String(row.message || ''),
+          ip: String(row.ip || 'web'),
+          userAgent: row.user_agent || row.userAgent || undefined,
+          status: row.status === 'reviewed' || row.status === 'responded' ? row.status : 'new',
+          emailNotificationSent: Boolean(row.email_notification_sent ?? row.emailNotificationSent ?? false),
+        }));
+        memoryInquiries = mapped;
+        return mapped;
+      }
+    } catch (err) {
+      console.warn('[Supabase Storage] Error reading:', err);
+    }
+  }
+
   // 1. Try Vercel KV if available
   const kvUrl = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL;
   const kvToken = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -172,6 +202,15 @@ export default async function handler(req: any, res: any) {
     target.status = status;
     await persistInquiries(list);
 
+    const sb = getSupabaseServer();
+    if (sb) {
+      try {
+        await sb.from('inquiries').update({ status }).eq('id', id);
+      } catch (err) {
+        console.warn('[Supabase Serverless] Error updating:', err);
+      }
+    }
+
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');
     res.end(JSON.stringify({ success: true, inquiry: target }));
@@ -197,6 +236,15 @@ export default async function handler(req: any, res: any) {
 
     const filtered = list.filter((i) => i.id !== id);
     await persistInquiries(filtered);
+
+    const sb = getSupabaseServer();
+    if (sb) {
+      try {
+        await sb.from('inquiries').delete().eq('id', id);
+      } catch (err) {
+        console.warn('[Supabase Serverless] Error deleting:', err);
+      }
+    }
 
     res.statusCode = 200;
     res.setHeader('Content-Type', 'application/json');

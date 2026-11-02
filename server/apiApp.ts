@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import {
   Inquiry,
   loadInquiries,
+  loadInquiriesAsync,
   saveInquiry,
   updateInquiryStatus,
   deleteInquiry,
@@ -111,7 +112,7 @@ router.post('/contact', async (req: Request, res: Response): Promise<void> => {
 });
 
 // Admin Review endpoint
-router.get('/admin/inquiries', (req: Request, res: Response): void => {
+router.get('/admin/inquiries', async (req: Request, res: Response): Promise<void> => {
   const authHeader = req.headers.authorization;
   const adminKey = process.env.ADMIN_KEY || 'nextgen-admin-secret-2026';
 
@@ -123,7 +124,7 @@ router.get('/admin/inquiries', (req: Request, res: Response): void => {
     return;
   }
 
-  const inquiries = loadInquiries();
+  const inquiries = await loadInquiriesAsync();
   res.json({
     success: true,
     count: inquiries.length,

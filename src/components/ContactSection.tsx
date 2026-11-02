@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles } from 'lucide-react';
+import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles, Database } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
+import { isSupabaseConfigured, submitInquiryToSupabase } from '../lib/supabase';
 
 interface FormData {
   name: string;
@@ -68,42 +69,75 @@ export const ContactSection: React.FC = () => {
     setStatus('submitting');
     setServerError(null);
 
+    const generatedId = `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+    let inquiryId = generatedId;
+    let savedToSupabase = false;
+    let apiSucceeded = false;
+    let serverMessage = 'Your inquiry has been successfully transmitted and logged for official review.';
+
     try {
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: formData.name.trim(),
-          email: formData.email.trim(),
-          subject: formData.subject.trim(),
-          message: formData.message.trim(),
-          bot_check: botCheck,
-        }),
-      });
-
-      let data: any = null;
-      try {
-        data = await response.json();
-      } catch {
-        throw new Error(
-          `Unable to complete inquiry submission (HTTP ${response.status}). Please check network or contact NextGen directly at official.nextgenorg@gmail.com.`
-        );
-      }
-
-      if (!response.ok) {
-        if (data?.details) {
-          setErrors(data.details);
+      // 1. If Supabase is connected, store directly in Supabase cloud database
+      if (isSupabaseConfigured()) {
+        try {
+          const supabaseResult = await submitInquiryToSupabase({
+            id: generatedId,
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            subject: formData.subject.trim(),
+            message: formData.message.trim(),
+            ip: 'web',
+            userAgent: typeof navigator !== 'undefined' ? navigator.userAgent : 'web',
+          });
+          if (supabaseResult?.id) {
+            inquiryId = supabaseResult.id;
+          }
+          savedToSupabase = true;
+        } catch (supabaseErr) {
+          console.warn('Supabase cloud submission skipped or error:', supabaseErr);
         }
-        throw new Error(data?.error || 'Failed to submit inquiry.');
       }
 
-      // Store locally so the inquiry is immediately available to the admin portal
+      // 2. Also invoke backend API if available (for email notifications / server logging)
+      try {
+        const response = await fetch('/api/contact', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: inquiryId,
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            subject: formData.subject.trim(),
+            message: formData.message.trim(),
+            bot_check: botCheck,
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json().catch(() => null);
+          if (data?.inquiryId) inquiryId = data.inquiryId;
+          if (data?.message) serverMessage = data.message;
+          apiSucceeded = true;
+        } else if (!savedToSupabase) {
+          // Only throw API error if we didn't save to Supabase
+          const data = await response.json().catch(() => null);
+          if (data?.details) {
+            setErrors(data.details);
+          }
+          throw new Error(data?.error || `Unable to submit inquiry (HTTP ${response.status}).`);
+        }
+      } catch (apiErr: any) {
+        if (!savedToSupabase) {
+          throw apiErr;
+        }
+      }
+
+      // 3. Fallback cache in localStorage for instant offline access on this device
       try {
         const submittedItem = {
-          id: data.inquiryId || `NG-${Date.now().toString(36).toUpperCase()}`,
-          createdAt: data.timestamp || new Date().toISOString(),
+          id: inquiryId,
+          createdAt: new Date().toISOString(),
           name: formData.name.trim(),
           email: formData.email.trim(),
           subject: formData.subject.trim(),
@@ -120,8 +154,8 @@ export const ContactSection: React.FC = () => {
       }
 
       setInquiryResult({
-        inquiryId: data.inquiryId,
-        message: data.message,
+        inquiryId,
+        message: serverMessage,
       });
       setStatus('success');
       setFormData({ name: '', email: '', subject: '', message: '' });

@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import nodemailer from 'nodemailer';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 
 export interface Inquiry {
   id: string;
@@ -20,6 +21,31 @@ const DATA_DIR = isVercel ? path.join('/tmp', 'nextgen_data') : path.resolve(pro
 const DATA_FILE = path.join(DATA_DIR, 'inquiries.json');
 
 let memoryInquiries: Inquiry[] = [];
+
+// Supabase client instance for backend
+let backendSupabase: SupabaseClient | null = null;
+
+function getBackendSupabase(): SupabaseClient | null {
+  if (backendSupabase) return backendSupabase;
+
+  const url = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.SUPABASE_ANON_KEY ||
+    process.env.VITE_SUPABASE_ANON_KEY;
+
+  if (url && key && url.startsWith('http')) {
+    try {
+      backendSupabase = createClient(url, key, {
+        auth: { persistSession: false },
+      });
+      return backendSupabase;
+    } catch (err) {
+      console.warn('[Storage] Backend Supabase init error:', err);
+    }
+  }
+  return null;
+}
 
 function ensureDataFile(): void {
   try {
@@ -51,15 +77,82 @@ export function loadInquiries(): Inquiry[] {
   return memoryInquiries;
 }
 
+export async function loadInquiriesAsync(): Promise<Inquiry[]> {
+  const sb = getBackendSupabase();
+  if (sb) {
+    try {
+      const { data, error } = await sb
+        .from('inquiries')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (!error && Array.isArray(data)) {
+        const mapped: Inquiry[] = data.map((row: any) => ({
+          id: String(row.id),
+          createdAt: row.created_at || row.createdAt || new Date().toISOString(),
+          name: String(row.name || ''),
+          email: String(row.email || ''),
+          subject: String(row.subject || ''),
+          message: String(row.message || ''),
+          ip: String(row.ip || 'web'),
+          userAgent: row.user_agent || row.userAgent || undefined,
+          status: row.status === 'reviewed' || row.status === 'responded' ? row.status : 'new',
+          emailNotificationSent: Boolean(row.email_notification_sent ?? row.emailNotificationSent ?? false),
+        }));
+
+        memoryInquiries = mapped;
+        try {
+          ensureDataFile();
+          fs.writeFileSync(DATA_FILE, JSON.stringify(mapped, null, 2), 'utf-8');
+        } catch {}
+        return mapped;
+      }
+    } catch (err) {
+      console.warn('[Storage] Supabase async load error:', err);
+    }
+  }
+
+  return loadInquiries();
+}
+
 export function saveInquiry(inquiry: Inquiry): void {
   const list = loadInquiries();
-  list.unshift(inquiry);
-  memoryInquiries = list;
+  // Filter out any existing item with same id
+  const filtered = list.filter((item) => item.id !== inquiry.id);
+  filtered.unshift(inquiry);
+  memoryInquiries = filtered;
+
   try {
     ensureDataFile();
-    fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
+    fs.writeFileSync(DATA_FILE, JSON.stringify(filtered, null, 2), 'utf-8');
   } catch (err) {
     console.warn('[Storage] File write skipped, preserved in memory:', err);
+  }
+
+  // Asynchronously sync to Supabase
+  const sb = getBackendSupabase();
+  if (sb) {
+    void (async () => {
+      try {
+        const { error } = await sb.from('inquiries').upsert({
+          id: inquiry.id,
+          created_at: inquiry.createdAt,
+          name: inquiry.name,
+          email: inquiry.email,
+          subject: inquiry.subject,
+          message: inquiry.message,
+          ip: inquiry.ip,
+          user_agent: inquiry.userAgent,
+          status: inquiry.status,
+          email_notification_sent: inquiry.emailNotificationSent,
+        });
+        if (error) {
+          console.warn('[Storage] Supabase upsert error:', error.message);
+        }
+      } catch (err) {
+        console.warn('[Storage] Supabase save error:', err);
+      }
+    })();
   }
 }
 
@@ -69,12 +162,28 @@ export function updateInquiryStatus(id: string, status: 'new' | 'reviewed' | 're
   if (!target) return null;
   target.status = status;
   memoryInquiries = list;
+
   try {
     ensureDataFile();
     fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
   } catch (err) {
     console.warn('[Storage] Status update saved in memory:', err);
   }
+
+  const sb = getBackendSupabase();
+  if (sb) {
+    void (async () => {
+      try {
+        const { error } = await sb.from('inquiries').update({ status }).eq('id', id);
+        if (error) {
+          console.warn('[Storage] Supabase update status error:', error.message);
+        }
+      } catch (err) {
+        console.warn('[Storage] Supabase update error:', err);
+      }
+    })();
+  }
+
   return target;
 }
 
@@ -84,12 +193,28 @@ export function deleteInquiry(id: string): boolean {
   if (!exists) return false;
   list = list.filter((i) => i.id !== id);
   memoryInquiries = list;
+
   try {
     ensureDataFile();
     fs.writeFileSync(DATA_FILE, JSON.stringify(list, null, 2), 'utf-8');
   } catch (err) {
     console.warn('[Storage] Deletion applied in memory:', err);
   }
+
+  const sb = getBackendSupabase();
+  if (sb) {
+    void (async () => {
+      try {
+        const { error } = await sb.from('inquiries').delete().eq('id', id);
+        if (error) {
+          console.warn('[Storage] Supabase delete error:', error.message);
+        }
+      } catch (err) {
+        console.warn('[Storage] Supabase delete error:', err);
+      }
+    })();
+  }
+
   return true;
 }
 

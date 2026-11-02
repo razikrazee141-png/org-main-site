@@ -12,21 +12,31 @@ import {
   ShieldCheck, 
   Key, 
   AlertCircle,
-  Download
+  Download,
+  Database,
+  Check,
+  Copy,
+  ExternalLink,
+  Settings,
+  X,
+  Radio
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
+import {
+  isSupabaseConfigured,
+  getSupabaseConfig,
+  saveSupabaseConfig,
+  clearSupabaseConfig,
+  fetchInquiriesFromSupabase,
+  updateInquiryStatusInSupabase,
+  deleteInquiryFromSupabase,
+  subscribeToInquiries,
+  testSupabaseConnection,
+  SUPABASE_SETUP_SQL,
+  InquiryRecord,
+} from '../lib/supabase';
 
-interface StoredInquiry {
-  id: string;
-  createdAt: string;
-  name: string;
-  email: string;
-  subject: string;
-  message: string;
-  ip: string;
-  status: 'new' | 'reviewed' | 'responded';
-  emailNotificationSent: boolean;
-}
+type StoredInquiry = InquiryRecord;
 
 export const AdminInbox: React.FC = () => {
   const [adminKey, setAdminKey] = useState<string>(
@@ -40,47 +50,77 @@ export const AdminInbox: React.FC = () => {
   const [statusFilter, setStatusFilter] = useState<'all' | 'new' | 'reviewed' | 'responded'>('all');
   const [selectedInquiry, setSelectedInquiry] = useState<StoredInquiry | null>(null);
 
+  // Supabase modal and status state
+  const [showSupabaseModal, setShowSupabaseModal] = useState<boolean>(false);
+  const [supabaseConfig, setSupabaseConfigState] = useState(getSupabaseConfig());
+  const [inputUrl, setInputUrl] = useState<string>(supabaseConfig.url || '');
+  const [inputAnonKey, setInputAnonKey] = useState<string>(supabaseConfig.anonKey || '');
+  const [copiedSql, setCopiedSql] = useState<boolean>(false);
+  const [testResult, setTestResult] = useState<{
+    checking: boolean;
+    success?: boolean;
+    message?: string;
+    tableReady?: boolean;
+  } | null>(null);
+
   const fetchInquiries = async (keyToUse = adminKey) => {
     setIsLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/admin/inquiries', {
-        headers: {
-          Authorization: `Bearer ${keyToUse}`,
-        },
-      });
-
-      if (res.status === 401) {
-        setIsAuthenticated(false);
-        throw new Error('Invalid Admin Key. Please verify and try again.');
-      }
-
-      if (!res.ok) {
-        throw new Error(`Failed to load inquiries (${res.status}). Please verify your security key or server status.`);
-      }
-
-      let data: any;
-      try {
-        data = await res.json();
-      } catch {
-        throw new Error(`Server returned non-JSON response (${res.status}). Please check API configuration.`);
-      }
-
-      const serverList: StoredInquiry[] = data.inquiries || [];
+      let supabaseList: StoredInquiry[] = [];
+      let serverList: StoredInquiry[] = [];
       let localList: StoredInquiry[] = [];
+
+      // 1. Fetch from Supabase Cloud if configured (primary global database)
+      if (isSupabaseConfigured()) {
+        try {
+          supabaseList = await fetchInquiriesFromSupabase();
+        } catch (sErr: any) {
+          console.warn('[AdminInbox] Supabase fetch notice:', sErr?.message);
+        }
+      }
+
+      // 2. Fetch from Backend Serverless / Express API if reachable
+      try {
+        const res = await fetch('/api/admin/inquiries', {
+          headers: {
+            Authorization: `Bearer ${keyToUse}`,
+          },
+        });
+
+        if (res.status === 401 && !isSupabaseConfigured()) {
+          setIsAuthenticated(false);
+          throw new Error('Invalid Admin Key. Please verify and try again.');
+        }
+
+        if (res.ok) {
+          const data = await res.json().catch(() => null);
+          if (data && Array.isArray(data.inquiries)) {
+            serverList = data.inquiries;
+          }
+        }
+      } catch (apiErr: any) {
+        // If Supabase is connected or local key valid, do not block the admin
+        if (!isSupabaseConfigured() && apiErr?.message?.includes('Invalid Admin Key')) {
+          throw apiErr;
+        }
+      }
+
+      // 3. Fallback to localStorage
       try {
         localList = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
       } catch {
         localList = [];
       }
 
-      // Merge server and local inquiries by unique ID, sorted newest first
+      // 4. Merge all sources by ID (Supabase takes precedence as single source of truth)
       const map = new Map<string, StoredInquiry>();
-      [...localList, ...serverList].forEach((item) => {
-        if (item?.id && !map.has(item.id)) {
+      [...localList, ...serverList, ...supabaseList].forEach((item) => {
+        if (item?.id) {
           map.set(item.id, item);
         }
       });
+
       const merged = Array.from(map.values()).sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
@@ -92,9 +132,13 @@ export const AdminInbox: React.FC = () => {
       // Select first if none selected
       if (!selectedInquiry && merged.length > 0) {
         setSelectedInquiry(merged[0]);
+      } else if (selectedInquiry) {
+        // Update selected inquiry with latest merged state
+        const updated = merged.find((i) => i.id === selectedInquiry.id);
+        if (updated) setSelectedInquiry(updated);
       }
     } catch (err: any) {
-      setError(err.message || 'Error communicating with server.');
+      setError(err.message || 'Error communicating with database.');
     } finally {
       setIsLoading(false);
     }
@@ -115,9 +159,36 @@ export const AdminInbox: React.FC = () => {
     fetchInquiries(adminKey);
   }, []);
 
+  // Real-time subscription to Supabase changes
+  useEffect(() => {
+    if (!isAuthenticated || !isSupabaseConfigured()) return;
+
+    const unsubscribe = subscribeToInquiries(() => {
+      fetchInquiries(adminKey);
+    });
+
+    return () => {
+      unsubscribe();
+    };
+  }, [isAuthenticated, supabaseConfig.isConfigured]);
+
   const handleUpdateStatus = async (id: string, newStatus: 'new' | 'reviewed' | 'responded') => {
+    // 1. Update in Supabase Cloud
+    if (isSupabaseConfigured()) {
+      await updateInquiryStatusInSupabase(id, newStatus);
+    }
+
+    // 2. Update locally in UI state immediately
+    setInquiries((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
+    );
+    if (selectedInquiry?.id === id) {
+      setSelectedInquiry((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+
+    // 3. Update backend server if active
     try {
-      const res = await fetch(`/api/admin/inquiries/${id}`, {
+      await fetch(`/api/admin/inquiries/${id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
@@ -125,49 +196,88 @@ export const AdminInbox: React.FC = () => {
         },
         body: JSON.stringify({ status: newStatus }),
       });
+    } catch {}
 
-      setInquiries((prev) =>
-        prev.map((item) => (item.id === id ? { ...item, status: newStatus } : item))
-      );
-      if (selectedInquiry?.id === id) {
-        setSelectedInquiry((prev) => (prev ? { ...prev, status: newStatus } : null));
-      }
-
-      // Sync with localStorage
-      try {
-        const local = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
-        const updated = local.map((i: any) => (i.id === id ? { ...i, status: newStatus } : i));
-        localStorage.setItem('nextgen_local_inquiries', JSON.stringify(updated));
-      } catch {}
-    } catch (err) {
-      console.error('Failed to update status', err);
-    }
+    // 4. Update localStorage
+    try {
+      const local = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
+      const updated = local.map((i: any) => (i.id === id ? { ...i, status: newStatus } : i));
+      localStorage.setItem('nextgen_local_inquiries', JSON.stringify(updated));
+    } catch {}
   };
 
   const handleDelete = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this inquiry record?')) return;
+
+    // 1. Delete from Supabase Cloud
+    if (isSupabaseConfigured()) {
+      await deleteInquiryFromSupabase(id);
+    }
+
+    // 2. Remove locally from UI state
+    setInquiries((prev) => prev.filter((item) => item.id !== id));
+    if (selectedInquiry?.id === id) {
+      setSelectedInquiry(null);
+    }
+
+    // 3. Remove from backend server if active
     try {
-      const res = await fetch(`/api/admin/inquiries/${id}`, {
+      await fetch(`/api/admin/inquiries/${id}`, {
         method: 'DELETE',
         headers: {
           Authorization: `Bearer ${adminKey}`,
         },
       });
+    } catch {}
 
-      setInquiries((prev) => prev.filter((item) => item.id !== id));
-      if (selectedInquiry?.id === id) {
-        setSelectedInquiry(null);
-      }
+    // 4. Update localStorage
+    try {
+      const local = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
+      const updated = local.filter((i: any) => i.id !== id);
+      localStorage.setItem('nextgen_local_inquiries', JSON.stringify(updated));
+    } catch {}
+  };
 
-      // Sync with localStorage
-      try {
-        const local = JSON.parse(localStorage.getItem('nextgen_local_inquiries') || '[]');
-        const updated = local.filter((i: any) => i.id !== id);
-        localStorage.setItem('nextgen_local_inquiries', JSON.stringify(updated));
-      } catch {}
-    } catch (err) {
-      console.error('Failed to delete inquiry', err);
+  const handleSaveSupabaseConfig = async () => {
+    if (!inputUrl.trim() || !inputAnonKey.trim()) {
+      alert('Please enter both Supabase Project URL and Anon API Key.');
+      return;
     }
+
+    saveSupabaseConfig(inputUrl.trim(), inputAnonKey.trim());
+    const updated = getSupabaseConfig();
+    setSupabaseConfigState(updated);
+
+    // Test connection
+    setTestResult({ checking: true });
+    const res = await testSupabaseConnection(inputUrl.trim(), inputAnonKey.trim());
+    setTestResult({
+      checking: false,
+      success: res.success,
+      message: res.message,
+      tableReady: res.tableReady,
+    });
+
+    if (res.success) {
+      fetchInquiries(adminKey);
+    }
+  };
+
+  const handleTestConnection = async () => {
+    setTestResult({ checking: true });
+    const res = await testSupabaseConnection(inputUrl.trim(), inputAnonKey.trim());
+    setTestResult({
+      checking: false,
+      success: res.success,
+      message: res.message,
+      tableReady: res.tableReady,
+    });
+  };
+
+  const handleCopySql = () => {
+    navigator.clipboard.writeText(SUPABASE_SETUP_SQL);
+    setCopiedSql(true);
+    setTimeout(() => setCopiedSql(false), 2500);
   };
 
   const filteredInquiries = inquiries.filter((inq) => {
@@ -182,10 +292,12 @@ export const AdminInbox: React.FC = () => {
     return matchesStatus && matchesSearch;
   });
 
+  const isConfigured = isSupabaseConfigured();
+
   return (
     <div className="min-h-screen bg-[#F8FAFC] text-slate-800 flex flex-col">
       {/* Top Header */}
-      <header className="bg-white border-b border-slate-200 px-4 sm:px-8 py-4 flex items-center justify-between sticky top-0 z-30">
+      <header className="bg-white border-b border-slate-200 px-4 sm:px-8 py-3.5 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-4">
           <a
             href="/"
@@ -209,7 +321,40 @@ export const AdminInbox: React.FC = () => {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
+          {/* Supabase Status Pill / Action */}
+          <button
+            type="button"
+            onClick={() => {
+              setSupabaseConfigState(getSupabaseConfig());
+              setShowSupabaseModal(true);
+            }}
+            title="Configure Supabase cloud database backend"
+            className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
+              isConfigured
+                ? 'bg-emerald-50/80 border-emerald-200 text-emerald-800 hover:bg-emerald-100'
+                : 'bg-amber-50 border-amber-200 text-amber-900 hover:bg-amber-100'
+            }`}
+          >
+            <Database className={`w-3.5 h-3.5 ${isConfigured ? 'text-emerald-600' : 'text-amber-600'}`} />
+            {isConfigured ? (
+              <span className="flex items-center gap-1.5 font-semibold">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span className="hidden md:inline">Supabase Cloud</span>
+                <span className="md:hidden">Cloud</span>
+              </span>
+            ) : (
+              <span className="flex items-center gap-1.5 font-semibold">
+                <span className="w-2 h-2 rounded-full bg-amber-500" />
+                <span>Connect Supabase</span>
+              </span>
+            )}
+            <Settings className="w-3 h-3 text-slate-400 opacity-70" />
+          </button>
+
           {isAuthenticated && inquiries.length > 0 && (
             <button
               type="button"
@@ -279,7 +424,7 @@ export const AdminInbox: React.FC = () => {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-2.5 rounded-xl bg-[#125EA2] text-white text-sm font-semibold hover:bg-[#0E4F8B] transition-colors"
+                className="w-full py-2.5 rounded-xl bg-[#125EA2] text-white text-sm font-semibold hover:bg-[#0E4F8B] transition-colors cursor-pointer"
               >
                 {isLoading ? 'Verifying...' : 'Unlock Messages'}
               </button>
@@ -300,224 +445,235 @@ export const AdminInbox: React.FC = () => {
                     type="text"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    placeholder="Search by name, email, query..."
-                    className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:outline-none focus:ring-2 focus:ring-[#125EA2]/20"
+                    placeholder="Search by name, email, subject, ID..."
+                    className="w-full pl-9 pr-4 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs focus:bg-white focus:outline-none focus:ring-2 focus:ring-[#125EA2]/20"
                   />
                 </div>
 
-                {/* Filter pills */}
-                <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
-                  {(['all', 'new', 'reviewed', 'responded'] as const).map((filter) => (
+                <div className="flex gap-1 bg-slate-100 p-1 rounded-xl text-xs font-medium">
+                  {(['all', 'new', 'reviewed', 'responded'] as const).map((tab) => (
                     <button
-                      key={filter}
+                      key={tab}
                       type="button"
-                      onClick={() => setStatusFilter(filter)}
-                      className={`px-3 py-1 rounded-lg font-medium capitalize transition-colors ${
-                        statusFilter === filter
-                          ? 'bg-[#125EA2] text-white'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      onClick={() => setStatusFilter(tab)}
+                      className={`flex-1 py-1.5 rounded-lg capitalize transition-colors cursor-pointer ${
+                        statusFilter === tab
+                          ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                          : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
-                      {filter}
+                      {tab}
                     </button>
                   ))}
-                  <span className="ml-auto text-xs text-slate-400 font-mono">
-                    {filteredInquiries.length} total
-                  </span>
                 </div>
               </div>
 
-              {/* Inquiries list */}
-              <div className="flex-1 overflow-y-auto divide-y divide-slate-100 max-h-[650px]">
-                {filteredInquiries.length === 0 ? (
+              {/* Inquiry List */}
+              <div className="flex-1 divide-y divide-slate-100 overflow-y-auto max-h-[650px]">
+                {isLoading && inquiries.length === 0 ? (
+                  <div className="p-12 text-center text-slate-400 text-xs">
+                    <RefreshCw className="w-6 h-6 animate-spin mx-auto mb-2 text-slate-300" />
+                    Loading correspondence...
+                  </div>
+                ) : filteredInquiries.length === 0 ? (
                   <div className="p-12 text-center text-slate-400 space-y-2">
                     <Inbox className="w-8 h-8 mx-auto text-slate-300" />
-                    <p className="text-xs">No inquiries matching filter.</p>
+                    <p className="text-xs font-medium">No inquiries matching filter</p>
+                    {!isConfigured && (
+                      <p className="text-[11px] text-amber-600 max-w-xs mx-auto">
+                        Connect Supabase to see inquiries submitted from all devices across the web.
+                      </p>
+                    )}
                   </div>
                 ) : (
                   filteredInquiries.map((inq) => {
                     const isSelected = selectedInquiry?.id === inq.id;
-                    const date = new Date(inq.createdAt).toLocaleDateString('en-IN', {
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    });
-
                     return (
-                      <button
+                      <div
                         key={inq.id}
-                        type="button"
                         onClick={() => setSelectedInquiry(inq)}
-                        className={`w-full text-left p-4 transition-colors flex flex-col gap-1.5 relative ${
-                          isSelected ? 'bg-sky-50/60' : 'hover:bg-slate-50'
+                        className={`p-4 transition-colors cursor-pointer border-l-4 ${
+                          isSelected
+                            ? 'bg-[#125EA2]/5 border-[#125EA2]'
+                            : inq.status === 'new'
+                            ? 'border-emerald-500 hover:bg-slate-50'
+                            : inq.status === 'reviewed'
+                            ? 'border-blue-400 hover:bg-slate-50'
+                            : 'border-transparent hover:bg-slate-50'
                         }`}
                       >
-                        {isSelected && (
-                          <div className="absolute left-0 top-0 bottom-0 w-1 bg-[#125EA2]" />
-                        )}
-
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="font-bold text-sm text-slate-900 truncate">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <span className="text-xs font-bold text-slate-900 truncate">
                             {inq.name}
                           </span>
-                          <span className="text-[11px] text-slate-400 shrink-0 font-mono">
-                            {date}
+                          <span className="text-[10px] text-slate-400 shrink-0 font-mono">
+                            {new Date(inq.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric' })}
                           </span>
                         </div>
 
-                        <div className="text-xs font-semibold text-[#125EA2] truncate">
+                        <p className="text-xs font-semibold text-slate-700 truncate mb-1">
                           {inq.subject}
-                        </div>
+                        </p>
 
-                        <p className="text-xs text-slate-500 line-clamp-2 leading-relaxed">
+                        <p className="text-[11px] text-slate-500 line-clamp-2 leading-relaxed">
                           {inq.message}
                         </p>
 
-                        <div className="flex items-center gap-2 pt-1">
+                        <div className="mt-2.5 flex items-center justify-between">
                           <span
-                            className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
+                            className={`inline-block px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                               inq.status === 'new'
-                                ? 'bg-amber-100 text-amber-800'
+                                ? 'bg-emerald-100 text-emerald-800'
                                 : inq.status === 'reviewed'
                                 ? 'bg-blue-100 text-blue-800'
-                                : 'bg-emerald-100 text-emerald-800'
+                                : 'bg-slate-200 text-slate-700'
                             }`}
                           >
                             {inq.status}
                           </span>
-
-                          <span className="text-[10px] text-slate-400 font-mono">
+                          <span className="text-[10px] font-mono text-slate-400">
                             {inq.id}
                           </span>
                         </div>
-                      </button>
+                      </div>
                     );
                   })
                 )}
               </div>
-
             </div>
 
-            {/* Right Column: Selected Inquiry Detail View */}
-            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl shadow-xs p-6 sm:p-8 min-h-[600px] flex flex-col justify-between">
+            {/* Right Column: Inquiry Details Viewer */}
+            <div className="lg:col-span-7 bg-white border border-slate-200 rounded-2xl shadow-xs p-6 min-h-[600px] flex flex-col">
               {selectedInquiry ? (
-                <div className="space-y-6">
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 pb-6 border-b border-slate-100">
-                    <div>
-                      <div className="flex items-center gap-2 mb-1">
-                        <span className="text-xs font-mono text-slate-400 font-bold">
-                          {selectedInquiry.id}
-                        </span>
-                        <span
-                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md ${
-                            selectedInquiry.status === 'new'
-                              ? 'bg-amber-100 text-amber-800'
-                              : selectedInquiry.status === 'reviewed'
-                              ? 'bg-blue-100 text-blue-800'
-                              : 'bg-emerald-100 text-emerald-800'
-                          }`}
-                        >
-                          {selectedInquiry.status}
-                        </span>
+                <div className="flex-1 flex flex-col justify-between space-y-6">
+                  
+                  {/* Top Details */}
+                  <div className="space-y-6">
+                    <div className="flex items-start justify-between border-b border-slate-100 pb-5">
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
+                              selectedInquiry.status === 'new'
+                                ? 'bg-emerald-100 text-emerald-800'
+                                : selectedInquiry.status === 'reviewed'
+                                ? 'bg-blue-100 text-blue-800'
+                                : 'bg-slate-200 text-slate-700'
+                            }`}
+                          >
+                            {selectedInquiry.status}
+                          </span>
+                          <span className="text-xs text-slate-400 font-mono">
+                            {selectedInquiry.id}
+                          </span>
+                        </div>
+                        <h2 className="text-xl font-bold text-slate-900">
+                          {selectedInquiry.subject}
+                        </h2>
                       </div>
-                      <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-                        {selectedInquiry.subject}
-                      </h2>
-                    </div>
 
-                    {/* Action buttons */}
-                    <div className="flex items-center gap-2 shrink-0">
-                      <a
-                        href={`mailto:${selectedInquiry.email}?subject=Re: [NextGen] ${encodeURIComponent(
-                          selectedInquiry.subject
-                        )}`}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-[#125EA2] hover:bg-[#0E4F8B] text-white text-xs font-semibold transition-colors"
-                      >
-                        <Reply className="w-3.5 h-3.5" />
-                        <span>Reply Email</span>
-                      </a>
                       <button
                         type="button"
                         onClick={() => handleDelete(selectedInquiry.id)}
-                        className="p-2 rounded-xl text-slate-400 hover:text-red-600 hover:bg-red-50 transition-colors"
+                        className="p-2 text-slate-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-colors cursor-pointer"
                         title="Delete Inquiry"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
-                  </div>
 
-                  {/* Sender Details */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl bg-slate-50 border border-slate-100 text-xs">
-                    <div>
-                      <span className="text-slate-400 block font-semibold mb-0.5">Sender</span>
-                      <strong className="text-slate-800 text-sm">{selectedInquiry.name}</strong>
+                    {/* Sender Profile */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200/60 text-xs">
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[10px] uppercase tracking-wider">
+                          Sender Name
+                        </span>
+                        <span className="font-bold text-slate-900 text-sm">{selectedInquiry.name}</span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[10px] uppercase tracking-wider">
+                          Email Address
+                        </span>
+                        <a
+                          href={`mailto:${selectedInquiry.email}?subject=Re: ${encodeURIComponent(selectedInquiry.subject)}`}
+                          className="font-semibold text-[#125EA2] hover:underline"
+                        >
+                          {selectedInquiry.email}
+                        </a>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[10px] uppercase tracking-wider">
+                          Timestamp
+                        </span>
+                        <span className="text-slate-700 font-mono text-[11px]">
+                          {new Date(selectedInquiry.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-slate-400 font-semibold block text-[10px] uppercase tracking-wider">
+                          Origin Client
+                        </span>
+                        <span className="text-slate-700 font-mono text-[11px]">
+                          {selectedInquiry.ip || 'web'}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-slate-400 block font-semibold mb-0.5">Email</span>
-                      <a
-                        href={`mailto:${selectedInquiry.email}`}
-                        className="text-[#125EA2] hover:underline font-mono"
-                      >
-                        {selectedInquiry.email}
-                      </a>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 block font-semibold mb-0.5">Received Date</span>
-                      <span className="text-slate-600">
-                        {new Date(selectedInquiry.createdAt).toLocaleString()}
+
+                    {/* Message Body */}
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                        Inquiry Message
                       </span>
+                      <div className="p-5 rounded-2xl bg-[#FAF9F6] border border-slate-200 text-slate-800 text-sm leading-relaxed whitespace-pre-wrap font-sans">
+                        {selectedInquiry.message}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Message Body */}
-                  <div className="space-y-2">
-                    <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
-                      Message Content
-                    </span>
-                    <div className="p-5 rounded-2xl bg-[#FAF9F6] border border-slate-200 text-sm text-slate-800 whitespace-pre-wrap leading-relaxed font-normal">
-                      {selectedInquiry.message}
-                    </div>
-                  </div>
-
-                  {/* Status Management */}
+                  {/* Actions Bar */}
                   <div className="pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3 text-xs">
-                    <span className="text-slate-500 font-medium">Update Status:</span>
+                    <a
+                      href={`mailto:${selectedInquiry.email}?subject=Re: NextGen Inquiry: ${encodeURIComponent(selectedInquiry.subject)}`}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#125EA2] text-white font-semibold hover:bg-[#0E4F8B] transition-colors cursor-pointer"
+                    >
+                      <Reply className="w-3.5 h-3.5" />
+                      <span>Reply via Email Client</span>
+                    </a>
+
                     <div className="flex items-center gap-2">
+                      <span className="text-slate-400 text-xs font-medium">Update Status:</span>
                       <button
                         type="button"
                         onClick={() => handleUpdateStatus(selectedInquiry.id, 'new')}
-                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
                           selectedInquiry.status === 'new'
-                            ? 'bg-amber-500 text-white'
+                            ? 'bg-emerald-600 text-white'
                             : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                         }`}
                       >
-                        Mark as New
+                        New
                       </button>
                       <button
                         type="button"
                         onClick={() => handleUpdateStatus(selectedInquiry.id, 'reviewed')}
-                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
                           selectedInquiry.status === 'reviewed'
                             ? 'bg-blue-600 text-white'
                             : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                         }`}
                       >
-                        Mark as Reviewed
+                        Reviewed
                       </button>
                       <button
                         type="button"
                         onClick={() => handleUpdateStatus(selectedInquiry.id, 'responded')}
-                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors ${
+                        className={`px-3 py-1.5 rounded-lg font-semibold transition-colors cursor-pointer ${
                           selectedInquiry.status === 'responded'
-                            ? 'bg-emerald-600 text-white'
+                            ? 'bg-purple-600 text-white'
                             : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                         }`}
                       >
-                        Mark as Responded
+                        Responded
                       </button>
                     </div>
                   </div>
@@ -534,6 +690,218 @@ export const AdminInbox: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Supabase Configuration & Quick Setup Modal */}
+      {showSupabaseModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs">
+          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <Database className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    Supabase Cloud Backend
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Sync contact form submissions across all devices globally in real-time
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowSupabaseModal(false)}
+                className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-6 space-y-6 text-xs">
+              
+              {/* Status Banner */}
+              <div
+                className={`p-4 rounded-2xl border flex items-start gap-3 ${
+                  isConfigured
+                    ? 'bg-emerald-50/70 border-emerald-200 text-emerald-900'
+                    : 'bg-amber-50 border-amber-200 text-amber-900'
+                }`}
+              >
+                <div className="mt-0.5 shrink-0">
+                  {isConfigured ? (
+                    <CheckCircle className="w-5 h-5 text-emerald-600" />
+                  ) : (
+                    <AlertCircle className="w-5 h-5 text-amber-600" />
+                  )}
+                </div>
+                <div className="space-y-1">
+                  <p className="font-bold text-sm">
+                    {isConfigured
+                      ? 'Supabase Backend Connected'
+                      : 'Supabase Not Configured Yet'}
+                  </p>
+                  <p className="text-xs leading-relaxed opacity-90">
+                    {isConfigured
+                      ? `Active backend configured via ${supabaseConfig.source}. Every form submission on any device is automatically written to Supabase and instantly visible here.`
+                      : 'Currently, inquiries submitted on other devices cannot be shared because Supabase cloud credentials are not connected.'}
+                  </p>
+                </div>
+              </div>
+
+              {/* Form inputs */}
+              <div className="space-y-4">
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-slate-700 flex items-center justify-between">
+                    <span>Supabase Project URL</span>
+                    <span className="text-[11px] text-slate-400 font-normal">
+                      e.g. https://xyzcompany.supabase.co
+                    </span>
+                  </label>
+                  <input
+                    type="text"
+                    value={inputUrl}
+                    onChange={(e) => setInputUrl(e.target.value)}
+                    placeholder="https://your-project-ref.supabase.co"
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#125EA2]/20"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="font-semibold text-slate-700 flex items-center justify-between">
+                    <span>Supabase Anon Public API Key</span>
+                    <span className="text-[11px] text-slate-400 font-normal">
+                      Dashboard → Project Settings → API
+                    </span>
+                  </label>
+                  <input
+                    type="password"
+                    value={inputAnonKey}
+                    onChange={(e) => setInputAnonKey(e.target.value)}
+                    placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-[#125EA2]/20"
+                  />
+                </div>
+              </div>
+
+              {/* Test Results Output */}
+              {testResult && (
+                <div
+                  className={`p-3.5 rounded-xl border text-xs flex items-center gap-2.5 ${
+                    testResult.checking
+                      ? 'bg-slate-50 border-slate-200 text-slate-600'
+                      : testResult.success
+                      ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                      : 'bg-red-50 border-red-200 text-red-800'
+                  }`}
+                >
+                  {testResult.checking && <RefreshCw className="w-4 h-4 animate-spin text-slate-500" />}
+                  {!testResult.checking && testResult.success && (
+                    <CheckCircle className="w-4 h-4 text-emerald-600 shrink-0" />
+                  )}
+                  {!testResult.checking && !testResult.success && (
+                    <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+                  )}
+                  <span>{testResult.checking ? 'Testing connection to Supabase...' : testResult.message}</span>
+                </div>
+              )}
+
+              {/* Action buttons */}
+              <div className="flex flex-wrap items-center gap-2.5 pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={handleSaveSupabaseConfig}
+                  className="px-4 py-2.5 rounded-xl bg-[#125EA2] hover:bg-[#0E4F8B] text-white font-semibold transition-colors cursor-pointer"
+                >
+                  Save & Connect
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleTestConnection}
+                  disabled={testResult?.checking}
+                  className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold transition-colors cursor-pointer"
+                >
+                  {testResult?.checking ? 'Testing...' : 'Test Connection'}
+                </button>
+
+                {isConfigured && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (window.confirm('Clear saved Supabase credentials from this browser?')) {
+                        clearSupabaseConfig();
+                        setInputUrl('');
+                        setInputAnonKey('');
+                        setSupabaseConfigState(getSupabaseConfig());
+                        setTestResult(null);
+                      }
+                    }}
+                    className="ml-auto px-3 py-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors cursor-pointer"
+                  >
+                    Disconnect
+                  </button>
+                )}
+              </div>
+
+              {/* SQL Database Setup Snippet */}
+              <div className="pt-4 border-t border-slate-100 space-y-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <span className="font-bold text-slate-800 block">
+                      Required Supabase Database Table
+                    </span>
+                    <span className="text-[11px] text-slate-500">
+                      Run this in your Supabase project's SQL Editor once to set up the inquiries table
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleCopySql}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-[11px] transition-colors cursor-pointer"
+                  >
+                    {copiedSql ? (
+                      <>
+                        <Check className="w-3.5 h-3.5 text-emerald-600" />
+                        <span className="text-emerald-700">Copied SQL!</span>
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5 text-slate-500" />
+                        <span>Copy SQL</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+
+                <pre className="p-3.5 rounded-xl bg-slate-900 text-slate-200 text-[11px] font-mono overflow-x-auto max-h-40 leading-relaxed">
+                  {SUPABASE_SETUP_SQL}
+                </pre>
+              </div>
+
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 rounded-b-3xl">
+              <span>NextGen Multi-Device Sync • Powered by Supabase</span>
+              <button
+                type="button"
+                onClick={() => setShowSupabaseModal(false)}
+                className="px-4 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-700 font-semibold hover:bg-slate-100 cursor-pointer"
+              >
+                Close
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
