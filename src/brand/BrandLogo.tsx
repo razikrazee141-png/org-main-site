@@ -18,11 +18,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   if (size === 'sm') {
     sizeClasses = variant === 'mark' ? 'h-8 w-8' : variant === 'wordmark' ? 'h-6 w-auto' : 'h-7 sm:h-8 w-auto';
   } else if (size === 'md') {
-    sizeClasses = variant === 'mark' ? 'h-9 w-9 sm:h-11 sm:w-11' : variant === 'wordmark' ? 'h-7 sm:h-9 w-auto' : 'h-8 sm:h-10 w-auto';
+    sizeClasses = variant === 'mark' ? 'h-10 w-10 sm:h-12 sm:w-12' : variant === 'wordmark' ? 'h-7 sm:h-9 w-auto' : 'h-8 sm:h-10 w-auto';
   } else if (size === 'lg') {
-    sizeClasses = variant === 'mark' ? 'h-16 w-16' : variant === 'wordmark' ? 'h-12 w-auto' : 'h-14 w-auto';
+    sizeClasses = variant === 'mark' ? 'h-20 w-20 sm:h-24 sm:w-24' : variant === 'wordmark' ? 'h-10 sm:h-12 w-auto' : 'h-12 sm:h-14 w-auto';
   } else if (size === 'xl') {
-    sizeClasses = variant === 'mark' ? 'h-24 w-24' : variant === 'wordmark' ? 'h-16 w-auto' : 'h-20 w-auto';
+    sizeClasses = variant === 'mark' ? 'h-28 w-28' : variant === 'wordmark' ? 'h-14 sm:h-16 w-auto' : 'h-16 sm:h-20 w-auto';
   }
 
   const src =
@@ -33,11 +33,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
       : '/brand/logo-lockup.png';
 
   return (
-    <div className={`select-none ${className}`}>
+    <div className={`select-none flex items-center justify-center ${className}`}>
       <img
         src={src}
         alt={alt}
-        className={`${sizeClasses} object-contain transition-all duration-300 block`}
+        className={`${sizeClasses} object-contain transition-all duration-300 block mx-auto`}
         loading="eager"
         decoding="async"
       />

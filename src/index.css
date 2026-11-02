@@ -30,6 +30,26 @@
     letter-spacing: -0.025em;
   }
 
+  /* Sleek minimalist Apple-grade scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #FAF9F6;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #CBD5E1;
+    border-radius: 9999px;
+    border: 2px solid #FAF9F6;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #94A3B8;
+  }
+
   /* Accessible outline focus for keyboard users */
   :focus-visible {
     outline: 2px solid #125EA2;
@@ -39,16 +59,16 @@
 
 /* Glass & editorial surface utilities */
 .glass-nav {
-  background: rgba(250, 249, 246, 0.88);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  background: rgba(250, 249, 246, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.75);
 }
 
 .glass-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(226, 232, 240, 0.85);
 }
 
@@ -58,6 +78,16 @@
 
 .brand-blue-gradient {
   background: linear-gradient(135deg, #125EA2 0%, #0D47A1 100%);
+}
+
+/* High-tech card hover elevation */
+.hover-card-elevate {
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.hover-card-elevate:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 16px 36px -12px rgba(18, 94, 162, 0.12);
 }
 
 /* Restrained accent borders */
@@ -76,7 +106,7 @@
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(6px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -85,7 +115,7 @@
 }
 
 .animate-fadeIn {
-  animation: fadeIn 0.45s ease-out forwards;
+  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Respect user's reduced motion preferences */

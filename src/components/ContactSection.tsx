@@ -1,7 +1,16 @@
 import React, { useState } from 'react';
-import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles, Database, Phone } from 'lucide-react';
+import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles, Database, Phone, Check } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { isSupabaseConfigured, submitInquiryToSupabase } from '../lib/supabase';
+import { triggerConfetti } from '../lib/confetti';
+
+const QUICK_SUBJECTS = [
+  { label: 'Technology Solutions', value: 'Technology & Software Solutions', icon: '💻' },
+  { label: 'Education & Digital Skills', value: 'Education & Digital Skills', icon: '🎓' },
+  { label: 'Community Project', value: 'Community Development Collaboration', icon: '🤝' },
+  { label: 'Social Services', value: 'Social Services & Public Assistance', icon: '❤️' },
+  { label: 'Institutional Partnership', value: 'Institutional Partnership', icon: '🏢' },
+];
 
 interface FormData {
   name: string;
@@ -173,6 +182,7 @@ export const ContactSection: React.FC = () => {
         message: serverMessage,
       });
       setStatus('success');
+      triggerConfetti();
       setFormData({ name: '', email: '', phone: '', subject: '', message: '' });
       setErrors({});
     } catch (err: any) {
@@ -409,15 +419,49 @@ export const ContactSection: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Subject Dropdown / Input */}
-                  <div>
-                    <label htmlFor="contact-subject" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Subject / Area of Inquiry <span className="text-red-500">*</span>
-                    </label>
+                  {/* Subject Dropdown / Input & Interactive Quick Chips */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label htmlFor="contact-subject" className="block text-xs font-semibold text-slate-700">
+                        Subject / Area of Inquiry <span className="text-red-500">*</span>
+                      </label>
+                      <span className="text-[11px] text-slate-400 hidden sm:inline">
+                        Click a quick chip or select below
+                      </span>
+                    </div>
+
+                    {/* Quick Subject Chips */}
+                    <div className="flex flex-wrap gap-1.5 pt-0.5">
+                      {QUICK_SUBJECTS.map((chip) => {
+                        const isSelected = formData.subject === chip.value;
+                        return (
+                          <button
+                            key={chip.value}
+                            type="button"
+                            onClick={() => {
+                              setFormData((prev) => ({ ...prev, subject: chip.value }));
+                              setErrors((prev) => ({ ...prev, subject: undefined }));
+                            }}
+                            className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer active:scale-95 ${
+                              isSelected
+                                ? 'bg-[#125EA2] text-white shadow-xs font-semibold'
+                                : 'bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60'
+                            }`}
+                          >
+                            <span>{chip.icon}</span>
+                            <span>{chip.label}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+
                     <select
                       id="contact-subject"
                       value={formData.subject}
-                      onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, subject: e.target.value });
+                        setErrors({ ...errors, subject: undefined });
+                      }}
                       className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 focus:outline-none focus:ring-2 transition-all ${
                         errors.subject
                           ? 'border-red-400 focus:ring-red-200'
@@ -442,16 +486,26 @@ export const ContactSection: React.FC = () => {
                     )}
                   </div>
 
-                  {/* Message Field */}
+                  {/* Message Field with Live Character Counter */}
                   <div>
-                    <label htmlFor="contact-message" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                      Message <span className="text-red-500">*</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <label htmlFor="contact-message" className="block text-xs font-semibold text-slate-700">
+                        Message <span className="text-red-500">*</span>
+                      </label>
+                      <span className={`text-[11px] font-mono ${formData.message.length >= 15 ? 'text-slate-400' : 'text-amber-600'}`}>
+                        {formData.message.length}/5000 {formData.message.length < 15 && '(min 15 chars)'}
+                      </span>
+                    </div>
                     <textarea
                       id="contact-message"
                       rows={4}
                       value={formData.message}
-                      onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, message: e.target.value });
+                        if (e.target.value.trim().length >= 15) {
+                          setErrors({ ...errors, message: undefined });
+                        }
+                      }}
                       placeholder="Please share details regarding your organization or question..."
                       className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all resize-y ${
                         errors.message

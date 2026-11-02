@@ -8,6 +8,7 @@ import { VisionMission } from './components/VisionMission';
 import { ContactSection } from './components/ContactSection';
 import { Footer } from './components/Footer';
 import { AdminInbox } from './components/AdminInbox';
+import { ScrollProgress } from './components/ScrollProgress';
 
 export const App: React.FC = () => {
   const [isAdminView, setIsAdminView] = useState(() => {
@@ -62,6 +63,9 @@ export const App: React.FC = () => {
 
       {/* Section G: Footer */}
       <Footer />
+
+      {/* Floating Apple-Style Circular Scroll Progress & Back to Top */}
+      <ScrollProgress />
     </div>
   );
 };
