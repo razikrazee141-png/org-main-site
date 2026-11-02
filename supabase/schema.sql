@@ -32,6 +32,7 @@ ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
 
 -- 4. Security Policies:
 -- Allow website visitors to insert inquiries
+DROP POLICY IF EXISTS "Allow public insert to inquiries" ON public.inquiries;
 CREATE POLICY "Allow public insert to inquiries"
   ON public.inquiries
   FOR INSERT
@@ -39,6 +40,7 @@ CREATE POLICY "Allow public insert to inquiries"
   WITH CHECK (true);
 
 -- Allow reading inquiries (admin portal)
+DROP POLICY IF EXISTS "Allow select on inquiries" ON public.inquiries;
 CREATE POLICY "Allow select on inquiries"
   ON public.inquiries
   FOR SELECT
@@ -46,6 +48,7 @@ CREATE POLICY "Allow select on inquiries"
   USING (true);
 
 -- Allow updating inquiries (status change in admin portal)
+DROP POLICY IF EXISTS "Allow update on inquiries" ON public.inquiries;
 CREATE POLICY "Allow update on inquiries"
   ON public.inquiries
   FOR UPDATE
@@ -54,6 +57,7 @@ CREATE POLICY "Allow update on inquiries"
   WITH CHECK (true);
 
 -- Allow deleting inquiries (admin portal)
+DROP POLICY IF EXISTS "Allow delete on inquiries" ON public.inquiries;
 CREATE POLICY "Allow delete on inquiries"
   ON public.inquiries
   FOR DELETE
@@ -61,4 +65,9 @@ CREATE POLICY "Allow delete on inquiries"
   USING (true);
 
 -- 5. Enable Supabase Realtime broadcast for instant admin notifications
-ALTER PUBLICATION supabase_realtime ADD TABLE public.inquiries;
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.inquiries;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;

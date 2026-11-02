@@ -275,8 +275,24 @@ export default async function handler(req: any, res: any) {
         const inquiryId = (body.id && String(body.id).trim().length > 0)
           ? String(body.id).trim()
           : `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-        const ip = (req.headers && (req.headers['x-forwarded-for'] as string))?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-        const userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'unknown';
+        let ip = 'web';
+        try {
+          const forwarded = req.headers && (req.headers['x-forwarded-for'] as string);
+          if (forwarded) {
+            ip = forwarded.split(',')[0].trim();
+          } else if (req.socket && req.socket.remoteAddress) {
+            ip = req.socket.remoteAddress;
+          }
+        } catch {
+          ip = 'web';
+        }
+
+        let userAgent = 'web';
+        try {
+          userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'web';
+        } catch {
+          userAgent = 'web';
+        }
 
         const newInquiry: Inquiry = {
           id: inquiryId,
@@ -303,7 +319,7 @@ export default async function handler(req: any, res: any) {
         const sb = getSupabaseServer();
         if (sb) {
           try {
-            await sb.from('inquiries').upsert({
+            const { error: sbError } = await sb.from('inquiries').upsert({
               id: newInquiry.id,
               created_at: newInquiry.createdAt,
               name: newInquiry.name,
@@ -316,6 +332,29 @@ export default async function handler(req: any, res: any) {
               status: newInquiry.status,
               email_notification_sent: newInquiry.emailNotificationSent,
             });
+
+            if (sbError && (
+              sbError.message?.toLowerCase().includes('phone') ||
+              sbError.details?.toLowerCase().includes('phone') ||
+              sbError.code === 'PGRST204' ||
+              sbError.code === '42703'
+            )) {
+              const fallbackMsg = newInquiry.phone
+                ? `[Phone: ${newInquiry.phone}]\n\n${newInquiry.message}`
+                : newInquiry.message;
+              await sb.from('inquiries').upsert({
+                id: newInquiry.id,
+                created_at: newInquiry.createdAt,
+                name: newInquiry.name,
+                email: newInquiry.email,
+                subject: newInquiry.subject,
+                message: fallbackMsg,
+                ip: newInquiry.ip,
+                user_agent: newInquiry.userAgent,
+                status: newInquiry.status,
+                email_notification_sent: newInquiry.emailNotificationSent,
+              });
+            }
           } catch (e) {
             console.warn('[Supabase Catch-all Route] upsert error:', e);
           }

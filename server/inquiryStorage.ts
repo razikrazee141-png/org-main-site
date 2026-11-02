@@ -149,8 +149,33 @@ export function saveInquiry(inquiry: Inquiry): void {
           status: inquiry.status,
           email_notification_sent: inquiry.emailNotificationSent,
         });
+
         if (error) {
-          console.warn('[Storage] Supabase upsert error:', error.message);
+          if (
+            error.message?.toLowerCase().includes('phone') ||
+            error.details?.toLowerCase().includes('phone') ||
+            error.code === 'PGRST204' ||
+            error.code === '42703'
+          ) {
+            console.warn('[Storage] Retrying Supabase sync without phone column...');
+            const fallbackMessage = inquiry.phone
+              ? `[Phone: ${inquiry.phone}]\n\n${inquiry.message}`
+              : inquiry.message;
+            await sb.from('inquiries').upsert({
+              id: inquiry.id,
+              created_at: inquiry.createdAt,
+              name: inquiry.name,
+              email: inquiry.email,
+              subject: inquiry.subject,
+              message: fallbackMessage,
+              ip: inquiry.ip,
+              user_agent: inquiry.userAgent,
+              status: inquiry.status,
+              email_notification_sent: inquiry.emailNotificationSent,
+            });
+          } else {
+            console.warn('[Storage] Supabase upsert error:', error.message);
+          }
         }
       } catch (err) {
         console.warn('[Storage] Supabase save error:', err);

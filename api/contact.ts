@@ -111,7 +111,7 @@ async function saveInquiry(inquiry: Inquiry): Promise<void> {
   const sb = getSupabaseServer();
   if (sb) {
     try {
-      await sb.from('inquiries').upsert({
+      const { error } = await sb.from('inquiries').upsert({
         id: inquiry.id,
         created_at: inquiry.createdAt,
         name: inquiry.name,
@@ -124,6 +124,29 @@ async function saveInquiry(inquiry: Inquiry): Promise<void> {
         status: inquiry.status,
         email_notification_sent: inquiry.emailNotificationSent,
       });
+
+      if (error && (
+        error.message?.toLowerCase().includes('phone') ||
+        error.details?.toLowerCase().includes('phone') ||
+        error.code === 'PGRST204' ||
+        error.code === '42703'
+      )) {
+        const fallbackMessage = inquiry.phone
+          ? `[Phone: ${inquiry.phone}]\n\n${inquiry.message}`
+          : inquiry.message;
+        await sb.from('inquiries').upsert({
+          id: inquiry.id,
+          created_at: inquiry.createdAt,
+          name: inquiry.name,
+          email: inquiry.email,
+          subject: inquiry.subject,
+          message: fallbackMessage,
+          ip: inquiry.ip,
+          user_agent: inquiry.userAgent,
+          status: inquiry.status,
+          email_notification_sent: inquiry.emailNotificationSent,
+        });
+      }
     } catch (err) {
       console.warn('[Supabase Serverless] Error writing:', err);
     }
@@ -281,8 +304,24 @@ export default async function handler(req: any, res: any) {
     const inquiryId = (body.id && String(body.id).trim().length > 0)
       ? String(body.id).trim()
       : `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const ip = (req.headers && (req.headers['x-forwarded-for'] as string))?.split(',')[0]?.trim() || req.socket?.remoteAddress || 'unknown';
-    const userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'unknown';
+    let ip = 'web';
+    try {
+      const forwarded = req.headers && (req.headers['x-forwarded-for'] as string);
+      if (forwarded) {
+        ip = forwarded.split(',')[0].trim();
+      } else if (req.socket && req.socket.remoteAddress) {
+        ip = req.socket.remoteAddress;
+      }
+    } catch {
+      ip = 'web';
+    }
+
+    let userAgent = 'web';
+    try {
+      userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'web';
+    } catch {
+      userAgent = 'web';
+    }
 
     const newInquiry: Inquiry = {
       id: inquiryId,

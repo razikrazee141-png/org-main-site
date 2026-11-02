@@ -30,7 +30,7 @@ router.get('/contact/health', (_req: Request, res: Response) => {
 // Primary Contact submission endpoint
 router.post('/contact', async (req: Request, res: Response): Promise<void> => {
   try {
-    const { name, email, phone, subject, message, bot_check } = req.body || {};
+    const { id: bodyId, name, email, phone, subject, message, bot_check } = req.body || {};
 
     if (bot_check && String(bot_check).trim().length > 0) {
       res.status(200).json({
@@ -81,9 +81,29 @@ router.post('/contact', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const inquiryId = `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
-    const ip = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() || req.ip || req.socket.remoteAddress || 'unknown';
-    const userAgent = (req.headers['user-agent'] as string) || 'unknown';
+    const inquiryId =
+      bodyId && String(bodyId).trim().length > 0
+        ? String(bodyId).trim()
+        : `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+
+    let ip = 'web';
+    try {
+      const forwarded = req.headers && (req.headers['x-forwarded-for'] as string);
+      if (forwarded) {
+        ip = forwarded.split(',')[0].trim();
+      } else if (req.socket && req.socket.remoteAddress) {
+        ip = req.socket.remoteAddress;
+      }
+    } catch {
+      ip = 'web';
+    }
+
+    let userAgent = 'web';
+    try {
+      userAgent = (req.headers && (req.headers['user-agent'] as string)) || 'web';
+    } catch {
+      userAgent = 'web';
+    }
 
     const newInquiry: Inquiry = {
       id: inquiryId,

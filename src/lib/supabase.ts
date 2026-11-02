@@ -229,11 +229,37 @@ export async function submitInquiryToSupabase(data: {
     email_notification_sent: false,
   };
 
-  const { data: inserted, error } = await client
+  let { data: inserted, error } = await client
     .from('inquiries')
     .insert([row])
     .select()
     .single();
+
+  // If table does not have 'phone' column yet, fallback gracefully without phone column
+  if (error && (
+    error.message?.toLowerCase().includes('phone') || 
+    error.details?.toLowerCase().includes('phone') ||
+    error.code === 'PGRST204' ||
+    error.code === '42703'
+  )) {
+    console.warn('[Supabase] Inquiries table lacks "phone" column. Retrying insert with embedded phone note...');
+    const fallbackRow: any = { ...row };
+    delete fallbackRow.phone;
+    if (data.phone?.trim()) {
+      fallbackRow.message = `[Phone: ${data.phone.trim()}]\n\n${fallbackRow.message}`;
+    }
+
+    const retry = await client
+      .from('inquiries')
+      .insert([fallbackRow])
+      .select()
+      .single();
+
+    if (!retry.error) {
+      inserted = retry.data;
+      error = null;
+    }
+  }
 
   if (error) {
     console.error('Supabase insert error:', error);
@@ -362,19 +388,28 @@ CREATE INDEX IF NOT EXISTS idx_inquiries_phone ON public.inquiries (phone);
 -- 3. Row Level Security
 ALTER TABLE public.inquiries ENABLE ROW LEVEL SECURITY;
 
--- 4. Policies (allow public insert from site, allow read/update/delete for admin)
+-- 4. Policies (idempotent: drops previous policy if exists, then recreates)
+DROP POLICY IF EXISTS "Allow public insert to inquiries" ON public.inquiries;
 CREATE POLICY "Allow public insert to inquiries"
   ON public.inquiries FOR INSERT TO public, anon, authenticated WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow select on inquiries" ON public.inquiries;
 CREATE POLICY "Allow select on inquiries"
   ON public.inquiries FOR SELECT TO public, anon, authenticated USING (true);
 
+DROP POLICY IF EXISTS "Allow update on inquiries" ON public.inquiries;
 CREATE POLICY "Allow update on inquiries"
   ON public.inquiries FOR UPDATE TO public, anon, authenticated USING (true) WITH CHECK (true);
 
+DROP POLICY IF EXISTS "Allow delete on inquiries" ON public.inquiries;
 CREATE POLICY "Allow delete on inquiries"
   ON public.inquiries FOR DELETE TO public, anon, authenticated USING (true);
 
 -- 5. Enable Realtime updates
-ALTER PUBLICATION supabase_realtime ADD TABLE public.inquiries;
+DO $$
+BEGIN
+  ALTER PUBLICATION supabase_realtime ADD TABLE public.inquiries;
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END $$;
 `;
