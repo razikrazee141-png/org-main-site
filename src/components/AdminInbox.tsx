@@ -19,7 +19,9 @@ import {
   ExternalLink,
   Settings,
   X,
-  Radio
+  Radio,
+  LogOut,
+  Lock
 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
 import {
@@ -39,10 +41,12 @@ import {
 type StoredInquiry = InquiryRecord;
 
 export const AdminInbox: React.FC = () => {
-  const [adminKey, setAdminKey] = useState<string>(
-    localStorage.getItem('nextgen_admin_key') || 'nextgen-admin-secret-2026'
-  );
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [adminKey, setAdminKey] = useState<string>(() => {
+    return sessionStorage.getItem('nextgen_admin_key') || '';
+  });
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
+    return sessionStorage.getItem('nextgen_admin_authenticated') === 'true';
+  });
   const [inquiries, setInquiries] = useState<StoredInquiry[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -90,6 +94,7 @@ export const AdminInbox: React.FC = () => {
 
         if (res.status === 401 && !isSupabaseConfigured()) {
           setIsAuthenticated(false);
+          sessionStorage.removeItem('nextgen_admin_authenticated');
           throw new Error('Invalid Admin Key. Please verify and try again.');
         }
 
@@ -100,7 +105,6 @@ export const AdminInbox: React.FC = () => {
           }
         }
       } catch (apiErr: any) {
-        // If Supabase is connected or local key valid, do not block the admin
         if (!isSupabaseConfigured() && apiErr?.message?.includes('Invalid Admin Key')) {
           throw apiErr;
         }
@@ -126,14 +130,14 @@ export const AdminInbox: React.FC = () => {
       );
 
       setInquiries(merged);
-      setIsAuthenticated(true);
-      localStorage.setItem('nextgen_admin_key', keyToUse);
+      if (keyToUse) {
+        sessionStorage.setItem('nextgen_admin_key', keyToUse);
+      }
 
       // Select first if none selected
       if (!selectedInquiry && merged.length > 0) {
         setSelectedInquiry(merged[0]);
       } else if (selectedInquiry) {
-        // Update selected inquiry with latest merged state
         const updated = merged.find((i) => i.id === selectedInquiry.id);
         if (updated) setSelectedInquiry(updated);
       }
@@ -142,6 +146,63 @@ export const AdminInbox: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const entered = adminKey.trim();
+    if (!entered) {
+      setError('Please enter your admin verification key.');
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    const validKey = (import.meta.env.VITE_ADMIN_KEY || 'nextgen-admin-secret-2026').trim();
+    let isKeyValid = entered === validKey;
+
+    // Check with backend API if alive
+    try {
+      const res = await fetch('/api/admin/inquiries', {
+        headers: {
+          Authorization: `Bearer ${entered}`,
+        },
+      });
+      if (res.ok) {
+        isKeyValid = true;
+      } else if (res.status === 401 && !isKeyValid) {
+        setIsLoading(false);
+        setError('Invalid verification key. Access denied.');
+        return;
+      }
+    } catch {
+      // Backend unavailable; client-configured key is valid
+    }
+
+    if (!isKeyValid) {
+      setIsLoading(false);
+      setError('Invalid verification key. Access denied.');
+      return;
+    }
+
+    sessionStorage.setItem('nextgen_admin_authenticated', 'true');
+    sessionStorage.setItem('nextgen_admin_key', entered);
+    // Clear old localStorage key so it never persists across new tabs/sessions automatically
+    localStorage.removeItem('nextgen_admin_key');
+    setIsAuthenticated(true);
+    await fetchInquiries(entered);
+  };
+
+  const handleLogout = () => {
+    sessionStorage.removeItem('nextgen_admin_authenticated');
+    sessionStorage.removeItem('nextgen_admin_key');
+    localStorage.removeItem('nextgen_admin_key');
+    setIsAuthenticated(false);
+    setAdminKey('');
+    setInquiries([]);
+    setSelectedInquiry(null);
+    setError(null);
   };
 
   const handleExport = () => {
@@ -156,7 +217,11 @@ export const AdminInbox: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchInquiries(adminKey);
+    const isAuth = sessionStorage.getItem('nextgen_admin_authenticated') === 'true';
+    const savedKey = sessionStorage.getItem('nextgen_admin_key');
+    if (isAuth && savedKey) {
+      fetchInquiries(savedKey);
+    }
   }, []);
 
   // Real-time subscription to Supabase changes
@@ -367,10 +432,22 @@ export const AdminInbox: React.FC = () => {
             </button>
           )}
 
+          {isAuthenticated && (
+            <button
+              type="button"
+              onClick={handleLogout}
+              title="Lock and sign out of admin portal"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-600" />
+              <span className="hidden sm:inline">Sign Out</span>
+            </button>
+          )}
+
           <button
             type="button"
             onClick={() => fetchInquiries()}
-            disabled={isLoading}
+            disabled={isLoading || !isAuthenticated}
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors cursor-pointer"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin' : ''}`} />
@@ -386,11 +463,11 @@ export const AdminInbox: React.FC = () => {
           <div className="max-w-md mx-auto my-auto p-8 rounded-3xl bg-white border border-slate-200 shadow-xl space-y-6 w-full">
             <div className="text-center space-y-2">
               <div className="w-12 h-12 rounded-2xl bg-[#125EA2]/10 text-[#125EA2] flex items-center justify-center mx-auto">
-                <Key className="w-6 h-6" />
+                <Lock className="w-6 h-6" />
               </div>
               <h2 className="text-xl font-bold text-slate-900">Admin Authorization Required</h2>
               <p className="text-xs text-slate-500">
-                Enter your administrative key to view official correspondence received from the website.
+                Please enter your official admin verification key to unlock the correspondence inbox.
               </p>
             </div>
 
@@ -402,21 +479,19 @@ export const AdminInbox: React.FC = () => {
             )}
 
             <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                fetchInquiries();
-              }}
+              onSubmit={handleLogin}
               className="space-y-4"
             >
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Secret Admin Key
+                  Secret Admin Verification Key
                 </label>
                 <input
                   type="password"
                   value={adminKey}
                   onChange={(e) => setAdminKey(e.target.value)}
-                  placeholder="Enter admin authorization key"
+                  placeholder="Enter admin verification key"
+                  autoFocus
                   className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-[#125EA2]/20"
                 />
               </div>
