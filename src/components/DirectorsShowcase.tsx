@@ -8,8 +8,8 @@ export const DirectorsShowcase: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const INTERVAL_DURATION = 2000; // Exactly 2 seconds per director
-  const TICK_INTERVAL = 20; // 50fps ultra-smooth progress tick
+  const INTERVAL_DURATION = 4500; // 4.5 seconds per director for comfortable reading
+  const TICK_INTERVAL = 30; // Smooth progress bar tick
 
   useEffect(() => {
     if (isPaused) return;
@@ -47,11 +47,11 @@ export const DirectorsShowcase: React.FC = () => {
       className="mt-20 pt-16 border-t border-slate-200/80 relative"
       aria-label="NextGen Board of Directors"
     >
-      {/* Header (No Serial Numbers) */}
+      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase text-[#125EA2] bg-[#125EA2]/10">
-            <ShieldCheck className="w-3.5 h-3.5" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold tracking-wider uppercase text-[#125EA2] bg-[#125EA2]/10 border border-[#125EA2]/20">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#125EA2]" />
             <span>{SITE_CONFIG.about.directorsBadge}</span>
           </div>
           <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
@@ -62,9 +62,9 @@ export const DirectorsShowcase: React.FC = () => {
           </p>
         </div>
 
-        {/* Play/Pause & Arrow Navigation Controls (Clean, No Serial Number) */}
+        {/* Play/Pause & Arrow Navigation Controls */}
         <div className="flex items-center gap-2">
-          {/* Subtle Indicator Dots */}
+          {/* Indicator Dots */}
           <div className="hidden sm:flex items-center gap-1.5 mr-2" aria-hidden="true">
             {directors.map((_, idx) => (
               <button
@@ -76,36 +76,38 @@ export const DirectorsShowcase: React.FC = () => {
                     ? 'w-6 bg-[#125EA2]'
                     : 'w-2 bg-slate-300 hover:bg-slate-400'
                 }`}
-                aria-label={`Go to slide ${idx + 1}`}
+                aria-label={`Go to director ${idx + 1}`}
               />
             ))}
           </div>
 
-          <button
-            type="button"
-            onClick={handlePrev}
-            className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
-            aria-label="Previous Director"
-          >
-            <ChevronLeft className="w-4 h-4" />
-          </button>
-          <button
-            type="button"
-            onClick={() => setIsPaused(!isPaused)}
-            className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
-            aria-label={isPaused ? 'Resume auto-play' : 'Pause auto-play'}
-            title={isPaused ? 'Resume auto-transition' : 'Pause auto-transition'}
-          >
-            {isPaused ? <Play className="w-4 h-4 text-[#125EA2]" /> : <Pause className="w-4 h-4 text-slate-500" />}
-          </button>
-          <button
-            type="button"
-            onClick={handleNext}
-            className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
-            aria-label="Next Director"
-          >
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={handlePrev}
+              className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+              aria-label="Previous Director"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsPaused(!isPaused)}
+              className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+              aria-label={isPaused ? 'Resume auto-play' : 'Pause auto-play'}
+              title={isPaused ? 'Resume auto-transition' : 'Pause auto-transition'}
+            >
+              {isPaused ? <Play className="w-4 h-4 text-[#125EA2]" /> : <Pause className="w-4 h-4 text-slate-500" />}
+            </button>
+            <button
+              type="button"
+              onClick={handleNext}
+              className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+              aria-label="Next Director"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
@@ -153,7 +155,7 @@ export const DirectorsShowcase: React.FC = () => {
                         loading="eager"
                       />
                       {/* Gradient shadow for depth */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/75 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
                     </div>
                   );
                 })}

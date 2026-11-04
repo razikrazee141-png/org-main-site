@@ -11,21 +11,16 @@ import { AdminInbox } from './components/AdminInbox';
 import { ScrollProgress } from './components/ScrollProgress';
 
 export const App: React.FC = () => {
-  const [isAdminView, setIsAdminView] = useState(() => {
-    return (
-      window.location.pathname === '/admin' ||
-      window.location.pathname === '/admin/' ||
-      new URLSearchParams(window.location.search).get('view') === 'admin'
-    );
-  });
+  const checkIsAdmin = () => {
+    const normalized = window.location.pathname.replace(/\/+$/, '') || '/';
+    return normalized === '/admin';
+  };
+
+  const [isAdminView, setIsAdminView] = useState<boolean>(checkIsAdmin);
 
   useEffect(() => {
     const handlePopState = () => {
-      setIsAdminView(
-        window.location.pathname === '/admin' ||
-        window.location.pathname === '/admin/' ||
-        new URLSearchParams(window.location.search).get('view') === 'admin'
-      );
+      setIsAdminView(checkIsAdmin());
     };
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);

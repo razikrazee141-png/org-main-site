@@ -369,7 +369,12 @@ export const AdminInbox: React.FC = () => {
         <div className="flex items-center gap-4">
           <a
             href="/"
-            className="flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-[#125EA2] transition-colors p-2 rounded-lg hover:bg-slate-100"
+            onClick={(e) => {
+              e.preventDefault();
+              window.history.pushState({}, '', '/');
+              window.dispatchEvent(new PopStateEvent('popstate'));
+            }}
+            className="flex items-center gap-2 text-xs font-semibold text-slate-600 hover:text-[#125EA2] transition-colors p-2 rounded-lg hover:bg-slate-100 cursor-pointer"
             title="Return to Public Website"
           >
             <ArrowLeft className="w-4 h-4" />

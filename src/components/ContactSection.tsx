@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles, Database, Phone, Check } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Mail, MapPin, Clock, Send, CheckCircle2, AlertCircle, Info, Sparkles, Database, Phone, Check, Copy, ShieldCheck, Lock } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { isSupabaseConfigured, submitInquiryToSupabase } from '../lib/supabase';
 import { triggerConfetti } from '../lib/confetti';
@@ -39,11 +39,56 @@ export const ContactSection: React.FC = () => {
     message: '',
   });
 
+  const [copiedType, setCopiedType] = useState<'email' | 'address' | null>(null);
   const [botCheck, setBotCheck] = useState('');
   const [inquiryResult, setInquiryResult] = useState<{ inquiryId: string; message: string } | null>(null);
   const [serverError, setServerError] = useState<string | null>(null);
   const [errors, setErrors] = useState<FormErrors>({});
   const [status, setStatus] = useState<'idle' | 'submitting' | 'success'>('idle');
+
+  useEffect(() => {
+    const handleSelectSubject = (e: Event) => {
+      const customEvent = e as CustomEvent<string>;
+      if (customEvent.detail) {
+        setFormData((prev) => ({ ...prev, subject: customEvent.detail }));
+        setErrors((prev) => ({ ...prev, subject: undefined }));
+      }
+    };
+    window.addEventListener('nextgen_select_subject', handleSelectSubject);
+    return () => window.removeEventListener('nextgen_select_subject', handleSelectSubject);
+  }, []);
+
+  const fallbackCopy = (text: string, type: 'email' | 'address') => {
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      setCopiedType(type);
+      setTimeout(() => setCopiedType(null), 2000);
+    } catch (e) {
+      console.warn('Copy fallback notice:', e);
+    }
+  };
+
+  const handleCopy = (text: string, type: 'email' | 'address') => {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text)
+        .then(() => {
+          setCopiedType(type);
+          setTimeout(() => setCopiedType(null), 2000);
+        })
+        .catch(() => {
+          fallbackCopy(text, type);
+        });
+    } else {
+      fallbackCopy(text, type);
+    }
+  };
 
   const validate = (): boolean => {
     const newErrors: FormErrors = {};
@@ -93,7 +138,6 @@ export const ContactSection: React.FC = () => {
     const generatedId = `NG-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
     let inquiryId = generatedId;
     let savedToSupabase = false;
-    let apiSucceeded = false;
     let serverMessage = 'Your inquiry has been successfully transmitted and logged for official review.';
 
     try {
@@ -141,9 +185,7 @@ export const ContactSection: React.FC = () => {
           const data = await response.json().catch(() => null);
           if (data?.inquiryId) inquiryId = data.inquiryId;
           if (data?.message) serverMessage = data.message;
-          apiSucceeded = true;
         } else if (!savedToSupabase) {
-          // Only throw API error if we didn't save to Supabase
           const data = await response.json().catch(() => null);
           if (data?.details) {
             setErrors(data.details);
@@ -200,8 +242,9 @@ export const ContactSection: React.FC = () => {
         
         {/* Section Header */}
         <div className="max-w-3xl space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-[#125EA2] bg-[#125EA2]/10">
-            <span>{contact.badge}</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-[#125EA2] bg-[#125EA2]/10 border border-[#125EA2]/20">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#125EA2]" />
+            <span>Official Secretariat Gateway</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
             {contact.heading}
@@ -217,21 +260,67 @@ export const ContactSection: React.FC = () => {
           <div className="lg:col-span-5 space-y-6">
             
             <div className="space-y-4">
-              <h3 className="text-sm font-bold uppercase tracking-wider text-slate-400">
-                Official Channels
+              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#125EA2]" />
+                <span>Verified Contact Secretariat</span>
               </h3>
 
               {contact.details.map((item) => (
                 <div
                   key={item.label}
-                  className="p-5 rounded-2xl bg-[#FAF9F6] border border-slate-200/80 space-y-1.5"
+                  className="p-5 rounded-2xl bg-[#FAF9F6] border border-slate-200/90 space-y-2 hover:border-slate-300 transition-colors relative group"
                 >
-                  <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                    {item.label === 'Official Email' && <Mail className="w-4 h-4 text-[#125EA2]" />}
-                    {(item.label.includes('Phone') || item.label.includes('Contact')) && <Phone className="w-4 h-4 text-[#125EA2]" />}
-                    {item.label === 'Administrative Office' && <MapPin className="w-4 h-4 text-[#388E3C]" />}
-                    {item.label === 'Operating Hours' && <Clock className="w-4 h-4 text-[#FFA726]" />}
-                    <span>{item.label}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                      {item.label === 'Official Email' && <Mail className="w-4 h-4 text-[#125EA2]" />}
+                      {(item.label.includes('Phone') || item.label.includes('Contact')) && <Phone className="w-4 h-4 text-[#125EA2]" />}
+                      {item.label === 'Administrative Office' && <MapPin className="w-4 h-4 text-[#388E3C]" />}
+                      {item.label === 'Operating Hours' && <Clock className="w-4 h-4 text-[#FFA726]" />}
+                      <span>{item.label}</span>
+                    </div>
+
+                    {/* Quick Copy Buttons for Email and Office Address */}
+                    {item.label === 'Official Email' && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(item.value, 'email')}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#125EA2] px-2 py-0.5 rounded-md hover:bg-white border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+                        title="Copy official email"
+                      >
+                        {copiedType === 'email' ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            <span className="text-emerald-700 font-semibold">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {item.label === 'Administrative Office' && (
+                      <button
+                        type="button"
+                        onClick={() => handleCopy(item.value, 'address')}
+                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#388E3C] px-2 py-0.5 rounded-md hover:bg-white border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+                        title="Copy office address"
+                      >
+                        {copiedType === 'address' ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-600" />
+                            <span className="text-emerald-700 font-semibold">Copied!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>Copy</span>
+                          </>
+                        )}
+                      </button>
+                    )}
                   </div>
 
                   {item.label === 'Official Email' ? (
@@ -249,7 +338,7 @@ export const ContactSection: React.FC = () => {
                       {item.value}
                     </a>
                   ) : (
-                    <p className="text-base font-semibold text-slate-800 whitespace-pre-line leading-relaxed">
+                    <p className="text-sm sm:text-base font-medium text-slate-800 whitespace-pre-line leading-relaxed">
                       {item.value}
                     </p>
                   )}
@@ -263,40 +352,55 @@ export const ContactSection: React.FC = () => {
               ))}
             </div>
 
+            {/* Official Response SLA Guarantee */}
+            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex items-start gap-3">
+              <Clock className="w-4 h-4 text-[#125EA2] shrink-0 mt-0.5" />
+              <div className="text-xs text-slate-600 leading-relaxed">
+                <span className="font-bold text-slate-900 block">Correspondence Response Protocol</span>
+                Official submissions are formally reviewed by the NextGen secretarial desk. Acknowledgment and responses are typically issued within 24 to 48 business hours.
+              </div>
+            </div>
+
             {/* Verification and Privacy Notice */}
             <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2">
               <div className="flex items-center gap-2 font-semibold text-slate-800">
-                <Info className="w-4 h-4 text-[#125EA2]" />
+                <ShieldCheck className="w-4 h-4 text-[#125EA2]" />
                 <span>Verification & Security Standard</span>
               </div>
               <p className="leading-relaxed">
-                NextGen maintains a strict policy regarding official communications. We do not solicit donations, passwords, or personal credentials through unverified channels.
+                NextGen maintains strict institutional standards regarding official correspondence. We never solicit credentials, banking details, or informal contributions through unverified third parties.
               </p>
             </div>
 
           </div>
 
-          {/* Right Column: Accessible Contact Form */}
+          {/* Right Column: Accessible Official Contact Form */}
           <div className="lg:col-span-7">
             <div className="p-8 sm:p-10 rounded-3xl bg-[#FAF9F6] border border-slate-200/90 shadow-sm relative">
               
-              <div className="mb-6">
-                <h3 className="text-xl font-bold text-slate-900">Send an Official Message</h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Fill in your details below and our secretarial team will respond through verified official correspondence.
-                </p>
+              <div className="mb-6 pb-4 border-b border-slate-200/80 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-xl font-bold text-slate-900">Transmit Official Message</h3>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Submissions are routed directly to NextGen executive administration.
+                  </p>
+                </div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-slate-200 text-[11px] font-semibold text-slate-600 self-start sm:self-auto">
+                  <Lock className="w-3 h-3 text-emerald-600" />
+                  <span>256-bit Secure Gateway</span>
+                </div>
               </div>
 
               {status === 'success' && inquiryResult ? (
                 <div className="p-8 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
+                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-xs">
                     <CheckCircle2 className="w-7 h-7" />
                   </div>
-                  <h4 className="text-lg font-bold text-emerald-950">Inquiry Logged Successfully</h4>
+                  <h4 className="text-lg font-bold text-emerald-950">Inquiry Transmitted & Logged</h4>
                   <p className="text-sm text-emerald-800 max-w-md mx-auto leading-relaxed">
                     {inquiryResult.message}
                   </p>
-                  <div className="p-3 bg-white/90 rounded-xl border border-emerald-200/90 inline-block font-mono text-xs text-emerald-900 shadow-xs">
+                  <div className="p-3 bg-white/95 rounded-xl border border-emerald-200/90 inline-block font-mono text-xs text-emerald-900 shadow-xs">
                     Inquiry Reference: <span className="font-bold text-[#125EA2]">{inquiryResult.inquiryId}</span>
                   </div>
                   <div>
@@ -306,7 +410,7 @@ export const ContactSection: React.FC = () => {
                         setStatus('idle');
                         setInquiryResult(null);
                       }}
-                      className="inline-flex px-5 py-2 rounded-full text-xs font-semibold text-emerald-900 bg-emerald-200 hover:bg-emerald-300 transition-colors cursor-pointer"
+                      className="inline-flex px-5 py-2.5 rounded-full text-xs font-semibold text-emerald-900 bg-emerald-200 hover:bg-emerald-300 transition-colors cursor-pointer shadow-2xs"
                     >
                       Submit Another Inquiry
                     </button>
@@ -394,7 +498,7 @@ export const ContactSection: React.FC = () => {
 
                     <div>
                       <label htmlFor="contact-phone" className="block text-xs font-semibold text-slate-700 mb-1.5">
-                        Phone Number <span className="text-red-500">*</span>
+                        Contact Phone <span className="text-red-500">*</span>
                       </label>
                       <input
                         id="contact-phone"
@@ -423,10 +527,10 @@ export const ContactSection: React.FC = () => {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <label htmlFor="contact-subject" className="block text-xs font-semibold text-slate-700">
-                        Subject / Area of Inquiry <span className="text-red-500">*</span>
+                        Subject / Focus Discipline <span className="text-red-500">*</span>
                       </label>
                       <span className="text-[11px] text-slate-400 hidden sm:inline">
-                        Click a quick chip or select below
+                        Click quick tag or select below
                       </span>
                     </div>
 
@@ -445,7 +549,7 @@ export const ContactSection: React.FC = () => {
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer active:scale-95 ${
                               isSelected
                                 ? 'bg-[#125EA2] text-white shadow-xs font-semibold'
-                                : 'bg-slate-100/80 hover:bg-slate-200/80 text-slate-700 border border-slate-200/60'
+                                : 'bg-slate-100/90 hover:bg-slate-200/90 text-slate-700 border border-slate-200/60'
                             }`}
                           >
                             <span>{chip.icon}</span>
@@ -490,7 +594,7 @@ export const ContactSection: React.FC = () => {
                   <div>
                     <div className="flex items-center justify-between mb-1.5">
                       <label htmlFor="contact-message" className="block text-xs font-semibold text-slate-700">
-                        Message <span className="text-red-500">*</span>
+                        Inquiry Message <span className="text-red-500">*</span>
                       </label>
                       <span className={`text-[11px] font-mono ${formData.message.length >= 15 ? 'text-slate-400' : 'text-amber-600'}`}>
                         {formData.message.length}/5000 {formData.message.length < 15 && '(min 15 chars)'}
@@ -506,7 +610,7 @@ export const ContactSection: React.FC = () => {
                           setErrors({ ...errors, message: undefined });
                         }
                       }}
-                      placeholder="Please share details regarding your organization or question..."
+                      placeholder="Please share details regarding your organization, proposal, or inquiry..."
                       className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all resize-y ${
                         errors.message
                           ? 'border-red-400 focus:ring-red-200'
@@ -538,7 +642,7 @@ export const ContactSection: React.FC = () => {
                       ) : (
                         <>
                           <Send className="w-4 h-4" />
-                          <span>Submit Official Inquiry</span>
+                          <span>Transmit Official Inquiry</span>
                         </>
                       )}
                     </button>
@@ -546,7 +650,7 @@ export const ContactSection: React.FC = () => {
 
                   {/* Integration readiness note */}
                   <p className="text-[11px] text-slate-400 text-center pt-2">
-                    Submissions are handled securely. Verified contact responses will be delivered directly to your specified email.
+                    Submissions are handled securely by NextGen governance. Verified contact responses will be delivered directly to your specified email.
                   </p>
 
                 </form>

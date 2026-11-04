@@ -84,14 +84,6 @@ export const Footer: React.FC = () => {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
           <div className="flex items-center gap-3">
             <span>{SITE_CONFIG.footer.copyright}</span>
-            <span className="text-slate-700">|</span>
-            <a
-              href="?view=admin"
-              className="text-slate-500 hover:text-slate-300 transition-colors text-[11px]"
-              title="Official Staff Portal to review incoming inquiries"
-            >
-              Inquiries Portal
-            </a>
           </div>
 
           <div className="text-center sm:text-right text-[11px] text-slate-400">

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowDown, ArrowRight, ShieldCheck, Sparkles, BookOpen, Heart, Users, Activity, CheckCircle2 } from 'lucide-react';
+import { ArrowDown, ArrowRight, ShieldCheck, CheckCircle2, Mail, Building2 } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
 import { SITE_CONFIG } from '../config/siteConfig';
 
@@ -11,8 +11,8 @@ export const Hero: React.FC = () => {
     const x = e.clientX - rect.left - rect.width / 2;
     const y = e.clientY - rect.top - rect.height / 2;
     setCardRotate({
-      x: -(y / rect.height) * 8,
-      y: (x / rect.width) * 8,
+      x: -(y / rect.height) * 7,
+      y: (x / rect.width) * 7,
     });
   };
 
@@ -31,16 +31,19 @@ export const Hero: React.FC = () => {
           {/* Left Column: Editorial Headline & Purpose */}
           <div className="lg:col-span-7 min-w-0 text-left space-y-6 sm:space-y-8">
             
-            {/* Top Pill / Badge */}
-            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/80 border border-slate-200/80 shadow-xs backdrop-blur-md max-w-full hover:border-slate-300 transition-colors">
-              <span className="flex h-2 w-2 rounded-full bg-[#125EA2] animate-pulse shrink-0" />
-              <span className="text-xs font-semibold tracking-wider uppercase text-slate-800 truncate">
-                {SITE_CONFIG.hero.badge}
+            {/* Top Pill / Official Institutional Badge */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-white/90 border border-slate-200/90 shadow-[0_2px_10px_rgba(0,0,0,0.03)] backdrop-blur-md max-w-full hover:border-slate-300 transition-colors">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="text-slate-300 hidden sm:inline">|</span>
+              <span className="text-xs font-semibold tracking-wider uppercase text-slate-800 truncate">
+                Official Institutional Portal
+              </span>
+              <span className="text-slate-300 hidden sm:inline">•</span>
               <span className="text-xs font-medium text-slate-500 hidden sm:inline flex items-center gap-1.5">
-                <Sparkles className="w-3 h-3 text-amber-500" />
-                Technology • Education • Social Impact
+                <ShieldCheck className="w-3.5 h-3.5 text-[#125EA2]" />
+                Registered Multidisciplinary Entity
               </span>
             </div>
 
@@ -62,49 +65,49 @@ export const Hero: React.FC = () => {
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 pt-2">
               <a
-                href="#about"
+                href="#focus-areas"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-3.5 rounded-full text-sm sm:text-base font-semibold text-white bg-[#125EA2] hover:bg-[#0E4F8B] shadow-md hover:shadow-xl hover:shadow-[#125EA2]/25 transition-all duration-200 active:scale-[0.98] group"
               >
-                <span>{SITE_CONFIG.hero.primaryCta}</span>
+                <span>Explore Disciplinary Scope</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
               </a>
 
               <a
                 href="#contact"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-sm sm:text-base font-semibold text-slate-700 bg-white/90 hover:bg-white border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-200 active:scale-[0.98]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-full text-sm sm:text-base font-semibold text-slate-700 bg-white/95 hover:bg-white border border-slate-200/90 hover:border-slate-300 shadow-xs hover:shadow-md transition-all duration-200 active:scale-[0.98]"
               >
-                <span>{SITE_CONFIG.hero.secondaryCta}</span>
+                <Mail className="w-4 h-4 text-[#125EA2]" />
+                <span>Contact Secretariat</span>
               </a>
             </div>
 
-            {/* Core Values Interactive Strip */}
-            <div className="pt-6 border-t border-slate-200/70 grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="p-2 rounded-xl hover:bg-white/70 border border-transparent hover:border-slate-200/60 transition-all flex items-center gap-2 text-xs font-medium text-slate-700">
-                <span className="p-1.5 rounded-lg bg-[#125EA2]/10 text-[#125EA2] shrink-0">
-                  <Sparkles className="w-3.5 h-3.5" />
-                </span>
-                <span className="truncate">Technology</span>
+            {/* Official Key Institutional Indicators Strip */}
+            <div className="pt-6 border-t border-slate-200/70 grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-white/95 to-slate-50/80 hover:to-white border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#125EA2]" />
+                  <div className="text-xl font-extrabold text-[#125EA2] font-mono leading-none">05</div>
+                </div>
+                <div className="text-xs font-semibold text-slate-900 mt-2">Focus Disciplines</div>
+                <div className="text-[11px] text-slate-500 truncate mt-0.5">Tech, Edu & Civic Scope</div>
               </div>
 
-              <div className="p-2 rounded-xl hover:bg-white/70 border border-transparent hover:border-slate-200/60 transition-all flex items-center gap-2 text-xs font-medium text-slate-700">
-                <span className="p-1.5 rounded-lg bg-[#388E3C]/10 text-[#388E3C] shrink-0">
-                  <BookOpen className="w-3.5 h-3.5" />
-                </span>
-                <span className="truncate">Education</span>
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-white/95 to-slate-50/80 hover:to-white border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#388E3C]" />
+                  <div className="text-xl font-extrabold text-[#388E3C] font-mono leading-none">05</div>
+                </div>
+                <div className="text-xs font-semibold text-slate-900 mt-2">Board Directors</div>
+                <div className="text-[11px] text-slate-500 truncate mt-0.5">Executive Governance</div>
               </div>
 
-              <div className="p-2 rounded-xl hover:bg-white/70 border border-transparent hover:border-slate-200/60 transition-all flex items-center gap-2 text-xs font-medium text-slate-700">
-                <span className="p-1.5 rounded-lg bg-[#ED2924]/10 text-[#ED2924] shrink-0">
-                  <Heart className="w-3.5 h-3.5" />
-                </span>
-                <span className="truncate">Social Services</span>
-              </div>
-
-              <div className="p-2 rounded-xl hover:bg-white/70 border border-transparent hover:border-slate-200/60 transition-all flex items-center gap-2 text-xs font-medium text-slate-700">
-                <span className="p-1.5 rounded-lg bg-[#FFA726]/10 text-[#D97706] shrink-0">
-                  <Users className="w-3.5 h-3.5" />
-                </span>
-                <span className="truncate">Community</span>
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-white/95 to-slate-50/80 hover:to-white border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#ED2924]" />
+                  <div className="text-xl font-extrabold text-[#ED2924] font-mono leading-none">100%</div>
+                </div>
+                <div className="text-xs font-semibold text-slate-900 mt-2">Grassroots Impact</div>
+                <div className="text-[11px] text-slate-500 truncate mt-0.5">Community Centered</div>
               </div>
             </div>
 
@@ -126,12 +129,12 @@ export const Hero: React.FC = () => {
 
               {/* Floating Pill Top Badge */}
               <div className="absolute -top-3.5 left-6 z-20 hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-white/95 border border-slate-200 shadow-md text-[11px] font-semibold text-slate-700 backdrop-blur-md">
-                <Activity className="w-3 h-3 text-[#125EA2] animate-pulse" />
-                <span>4 Core Disciplinary Values</span>
+                <Building2 className="w-3.5 h-3.5 text-[#125EA2]" />
+                <span>NextGen Institutional Charter</span>
               </div>
 
               {/* Main Visual Showcase Card */}
-              <div className="bg-white/90 rounded-3xl p-6 sm:p-8 lg:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.06)] border border-white backdrop-blur-xl relative overflow-hidden">
+              <div className="bg-white/95 rounded-3xl p-6 sm:p-8 lg:p-9 shadow-[0_20px_50px_rgba(0,0,0,0.07)] border border-slate-200/80 backdrop-blur-xl relative overflow-hidden">
                 
                 {/* Subtle background brand watermark */}
                 <div className="absolute -right-8 -bottom-8 opacity-5 pointer-events-none">
@@ -142,7 +145,7 @@ export const Hero: React.FC = () => {
                 <div className="flex flex-col items-center justify-center text-center space-y-4 sm:space-y-5">
                   
                   {/* Official Emblem with clean centered floating presentation */}
-                  <div className="flex items-center justify-center p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-white to-slate-50/90 shadow-md border border-slate-100 transition-transform duration-300 hover:scale-105 group mx-auto">
+                  <div className="relative p-4 sm:p-5 rounded-2xl bg-gradient-to-b from-white to-slate-50 shadow-md border border-slate-100 transition-transform duration-300 hover:scale-105 group mx-auto">
                     <BrandLogo variant="mark" size="lg" />
                   </div>
 
@@ -159,9 +162,9 @@ export const Hero: React.FC = () => {
                     A registered multidisciplinary organization uniting technical innovation, ethical education, and civic impact.
                   </p>
 
-                  {/* 4 Quadrants Pill Matrix with sleek hover highlights */}
+                  {/* 4 Quadrants Matrix with sleek hover highlights */}
                   <div className="w-full grid grid-cols-2 gap-2 sm:gap-2.5 pt-4 border-t border-slate-100 text-left">
-                    <div className="p-3 rounded-2xl bg-slate-50 hover:bg-[#125EA2]/5 border border-slate-100 transition-colors group">
+                    <div className="p-3 rounded-2xl bg-slate-50/90 hover:bg-[#125EA2]/5 border border-slate-100 hover:border-[#125EA2]/25 transition-all group">
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#125EA2] shrink-0" />
                         <span className="text-xs font-semibold text-slate-800">Innovation</span>
@@ -169,7 +172,7 @@ export const Hero: React.FC = () => {
                       <p className="text-[10px] text-slate-500 mt-0.5 truncate">Digital tools & systems</p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-50 hover:bg-[#388E3C]/5 border border-slate-100 transition-colors group">
+                    <div className="p-3 rounded-2xl bg-slate-50/90 hover:bg-[#388E3C]/5 border border-slate-100 hover:border-[#388E3C]/25 transition-all group">
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#388E3C] shrink-0" />
                         <span className="text-xs font-semibold text-slate-800">Knowledge</span>
@@ -177,7 +180,7 @@ export const Hero: React.FC = () => {
                       <p className="text-[10px] text-slate-500 mt-0.5 truncate">Practical learning</p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-50 hover:bg-[#ED2924]/5 border border-slate-100 transition-colors group">
+                    <div className="p-3 rounded-2xl bg-slate-50/90 hover:bg-[#ED2924]/5 border border-slate-100 hover:border-[#ED2924]/25 transition-all group">
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#ED2924] shrink-0" />
                         <span className="text-xs font-semibold text-slate-800">Compassion</span>
@@ -185,7 +188,7 @@ export const Hero: React.FC = () => {
                       <p className="text-[10px] text-slate-500 mt-0.5 truncate">Public welfare</p>
                     </div>
 
-                    <div className="p-3 rounded-2xl bg-slate-50 hover:bg-[#FFA726]/5 border border-slate-100 transition-colors group">
+                    <div className="p-3 rounded-2xl bg-slate-50/90 hover:bg-[#FFA726]/5 border border-slate-100 hover:border-[#FFA726]/25 transition-all group">
                       <div className="flex items-center gap-1.5 sm:gap-2">
                         <span className="w-2 h-2 rounded-full bg-[#FFA726] shrink-0" />
                         <span className="text-xs font-semibold text-slate-800">Community</span>
@@ -198,9 +201,9 @@ export const Hero: React.FC = () => {
               </div>
 
               {/* Floating Bottom Badge */}
-              <div className="absolute -bottom-3 right-6 z-20 hidden sm:inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 shadow-md text-[11px] font-semibold text-emerald-800 backdrop-blur-md">
-                <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                <span>Cloud Synced & Verified</span>
+              <div className="absolute -bottom-3 right-6 z-20 hidden sm:inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-emerald-50 border border-emerald-200/80 shadow-md text-[11px] font-semibold text-emerald-800 backdrop-blur-md">
+                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Verified Institutional Entity</span>
               </div>
 
             </div>

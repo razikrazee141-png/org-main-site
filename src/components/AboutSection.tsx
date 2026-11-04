@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Compass, Layers, CheckCircle2 } from 'lucide-react';
+import { Target, Layers, ShieldCheck, CheckCircle2, Award } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DirectorsShowcase } from './DirectorsShowcase';
 
@@ -12,7 +12,8 @@ export const AboutSection: React.FC = () => {
         
         {/* Section Header */}
         <div className="max-w-3xl space-y-4">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-[#125EA2] bg-[#125EA2]/10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-[#125EA2] bg-[#125EA2]/10 border border-[#125EA2]/20">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#125EA2]" />
             <span>{about.badge}</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900 leading-tight">
@@ -30,9 +31,9 @@ export const AboutSection: React.FC = () => {
           <div className="lg:col-span-6 space-y-8">
             
             {/* Purpose Panel */}
-            <div className="p-8 rounded-3xl bg-[#FAF9F6] border border-slate-200/80 space-y-4">
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#FAF9F6] to-white border border-slate-200/90 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4">
               <div className="flex items-center gap-3">
-                <span className="p-2.5 rounded-xl bg-[#125EA2] text-white">
+                <span className="p-2.5 rounded-xl bg-[#125EA2] text-white shadow-xs">
                   <Target className="w-5 h-5" />
                 </span>
                 <h3 className="text-xl font-bold text-slate-900">{about.purposeHeading}</h3>
@@ -43,9 +44,9 @@ export const AboutSection: React.FC = () => {
             </div>
 
             {/* Multidisciplinary Approach Panel */}
-            <div className="p-8 rounded-3xl bg-[#FAF9F6] border border-slate-200/80 space-y-4">
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#FAF9F6] to-white border border-slate-200/90 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4">
               <div className="flex items-center gap-3">
-                <span className="p-2.5 rounded-xl bg-[#388E3C] text-white">
+                <span className="p-2.5 rounded-xl bg-[#388E3C] text-white shadow-xs">
                   <Layers className="w-5 h-5" />
                 </span>
                 <h3 className="text-xl font-bold text-slate-900">{about.approachHeading}</h3>
@@ -56,10 +57,13 @@ export const AboutSection: React.FC = () => {
             </div>
 
             {/* Verified Statement Callout */}
-            <div className="p-6 rounded-2xl border-l-4 border-[#125EA2] bg-slate-50/90 text-sm text-slate-600 space-y-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">Institutional Governance</span>
+            <div className="p-6 rounded-2xl border-l-4 border-[#125EA2] bg-slate-50/90 text-sm text-slate-600 space-y-2 shadow-2xs">
+              <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <Award className="w-4 h-4 text-[#125EA2]" />
+                <span>Institutional Governance Standards</span>
+              </div>
               <p className="leading-relaxed">
-                NextGen operates with an emphasis on accountability, accessibility, and measurable grassroots relevance across every engagement.
+                NextGen operates with an emphasis on institutional accountability, transparency, and measurable grassroots relevance across every public initiative.
               </p>
             </div>
 
@@ -67,14 +71,15 @@ export const AboutSection: React.FC = () => {
 
           {/* Right Column: 4 Foundation Pillars */}
           <div className="lg:col-span-6 space-y-4">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6">
-              Core Strategic Foundations
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-6 flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-[#125EA2]" />
+              <span>Core Strategic Foundations</span>
             </h3>
 
             {about.pillars.map((pillar, index) => (
               <div
                 key={pillar.title}
-                className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-300 relative overflow-hidden"
+                className="group p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 relative overflow-hidden"
               >
                 {/* Brand colored vertical accent indicator */}
                 <div
