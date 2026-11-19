@@ -5,7 +5,7 @@ import { isSupabaseConfigured, submitInquiryToSupabase } from '../lib/supabase';
 import { triggerConfetti } from '../lib/confetti';
 
 const QUICK_SUBJECTS = [
-  { label: 'Technology Solutions', value: 'Technology & Software Solutions', icon: '💻' },
+  { label: 'Software Services', value: 'Software Services', icon: '💻' },
   { label: 'Education & Digital Skills', value: 'Education & Digital Skills', icon: '🎓' },
   { label: 'Community Project', value: 'Community Development Collaboration', icon: '🤝' },
   { label: 'Social Services', value: 'Social Services & Public Assistance', icon: '❤️' },
@@ -548,12 +548,13 @@ export const ContactSection: React.FC = () => {
                             }}
                             className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 cursor-pointer active:scale-95 ${
                               isSelected
-                                ? 'bg-[#125EA2] text-white shadow-xs font-semibold'
+                                ? 'bg-[#125EA2] text-white shadow-xs font-semibold ring-2 ring-[#125EA2]/30'
                                 : 'bg-slate-100/90 hover:bg-slate-200/90 text-slate-700 border border-slate-200/60'
                             }`}
                           >
                             <span>{chip.icon}</span>
                             <span>{chip.label}</span>
+                            {isSelected && <Check className="w-3 h-3 text-white ml-0.5" />}
                           </button>
                         );
                       })}
@@ -576,7 +577,7 @@ export const ContactSection: React.FC = () => {
                     >
                       <option value="">Select an inquiry category</option>
                       <option value="General Corporate Inquiry">General Corporate Inquiry</option>
-                      <option value="Technology & Software Solutions">Technology & Software Solutions</option>
+                      <option value="Software Services">Software Services</option>
                       <option value="Education & Digital Skills">Education & Digital Skills</option>
                       <option value="Social Services & Public Assistance">Social Services & Public Assistance</option>
                       <option value="Community Development Collaboration">Community Development Collaboration</option>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Eye, Flag, Sparkles, ShieldCheck, CheckCircle2 } from 'lucide-react';
+import { Eye, Flag, ShieldCheck, CheckCircle2, Quote } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 
 export const VisionMission: React.FC = () => {
@@ -18,14 +18,14 @@ export const VisionMission: React.FC = () => {
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 mb-16 sm:mb-20">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase text-sky-400 bg-sky-950/60 border border-sky-800/50">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase text-sky-400 bg-sky-950/60 border border-sky-800/50 backdrop-blur-md">
             <ShieldCheck className="w-3.5 h-3.5 text-sky-400" />
             <span>Strategic Direction & Institutional Mandate</span>
           </div>
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-white">
             Vision & Mission
           </h2>
-          <p className="text-slate-400 text-base sm:text-lg leading-relaxed">
+          <p className="text-slate-400 text-base sm:text-lg leading-relaxed font-normal">
             Guiding principles that define our institutional purpose, set our standards, and inspire our long-term societal contributions.
           </p>
         </div>
@@ -34,11 +34,11 @@ export const VisionMission: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           
           {/* Vision Card */}
-          <div className="rounded-3xl p-8 sm:p-12 bg-white/[0.04] border border-white/10 backdrop-blur-md flex flex-col justify-between relative group hover:border-[#125EA2]/50 transition-all duration-300 shadow-xl">
+          <div className="rounded-3xl p-8 sm:p-12 bg-white/[0.04] border border-white/10 backdrop-blur-md flex flex-col justify-between relative group hover:border-[#125EA2]/60 hover:bg-white/[0.06] transition-all duration-300 shadow-xl">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="p-3 rounded-2xl bg-[#125EA2] text-white shadow-md">
+                  <span className="p-3 rounded-2xl bg-[#125EA2] text-white shadow-md group-hover:scale-105 transition-transform duration-200">
                     <Eye className="w-6 h-6" />
                   </span>
                   <span className="text-xs font-mono font-bold uppercase tracking-widest text-sky-400">
@@ -53,7 +53,7 @@ export const VisionMission: React.FC = () => {
                 “{visionMission.vision.statement}”
               </blockquote>
 
-              <p className="text-slate-300 text-sm sm:text-base leading-relaxed pt-2">
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed pt-2 font-normal">
                 {visionMission.vision.interpretation}
               </p>
             </div>
@@ -63,16 +63,16 @@ export const VisionMission: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-[#125EA2]" />
                 <span>Forward-Looking Outlook</span>
               </div>
-              <span className="text-sky-400/80">NextGen 2030 Horizon</span>
+              <span className="text-sky-400/90 font-semibold">NextGen 2030 Horizon</span>
             </div>
           </div>
 
           {/* Mission Card */}
-          <div className="rounded-3xl p-8 sm:p-12 bg-white/[0.04] border border-white/10 backdrop-blur-md flex flex-col justify-between relative group hover:border-[#388E3C]/50 transition-all duration-300 shadow-xl">
+          <div className="rounded-3xl p-8 sm:p-12 bg-white/[0.04] border border-white/10 backdrop-blur-md flex flex-col justify-between relative group hover:border-[#388E3C]/60 hover:bg-white/[0.06] transition-all duration-300 shadow-xl">
             <div className="space-y-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="p-3 rounded-2xl bg-[#388E3C] text-white shadow-md">
+                  <span className="p-3 rounded-2xl bg-[#388E3C] text-white shadow-md group-hover:scale-105 transition-transform duration-200">
                     <Flag className="w-6 h-6" />
                   </span>
                   <span className="text-xs font-mono font-bold uppercase tracking-widest text-emerald-400">
@@ -87,7 +87,7 @@ export const VisionMission: React.FC = () => {
                 “{visionMission.mission.statement}”
               </blockquote>
 
-              <p className="text-slate-300 text-sm sm:text-base leading-relaxed pt-2">
+              <p className="text-slate-300 text-sm sm:text-base leading-relaxed pt-2 font-normal">
                 {visionMission.mission.interpretation}
               </p>
             </div>
@@ -97,7 +97,7 @@ export const VisionMission: React.FC = () => {
                 <span className="w-2 h-2 rounded-full bg-[#388E3C]" />
                 <span>Everyday Operational Mandate</span>
               </div>
-              <span className="text-emerald-400/80">Responsible Execution</span>
+              <span className="text-emerald-400/90 font-semibold">Responsible Execution</span>
             </div>
           </div>
 
@@ -105,19 +105,19 @@ export const VisionMission: React.FC = () => {
 
         {/* 4 Organizational Core Commitments Row */}
         <div className="mt-12 pt-8 border-t border-white/10 grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-3">
+          <div className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/15 transition-all flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-[#125EA2]" />
             <span className="text-xs font-semibold text-slate-200">Institutional Integrity</span>
           </div>
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-3">
+          <div className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/15 transition-all flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-[#388E3C]" />
             <span className="text-xs font-semibold text-slate-200">Ethical Digital Progress</span>
           </div>
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-3">
+          <div className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/15 transition-all flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-[#ED2924]" />
             <span className="text-xs font-semibold text-slate-200">Public Social Support</span>
           </div>
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center gap-3">
+          <div className="p-4 rounded-2xl bg-white/[0.03] hover:bg-white/[0.06] border border-white/5 hover:border-white/15 transition-all flex items-center gap-3">
             <span className="w-2 h-2 rounded-full bg-[#FFA726]" />
             <span className="text-xs font-semibold text-slate-200">Grassroots Empowerment</span>
           </div>

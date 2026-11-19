@@ -40,7 +40,7 @@ export const FocusAreas: React.FC = () => {
 
   const handleInquireDiscipline = (title: string) => {
     let mapped = 'General Corporate Inquiry';
-    if (title.includes('Technology')) mapped = 'Technology & Software Solutions';
+    if (title.includes('Software') || title.includes('Technology')) mapped = 'Software Services';
     else if (title.includes('Education')) mapped = 'Education & Digital Skills';
     else if (title.includes('Social Services')) mapped = 'Social Services & Public Assistance';
     else if (title.includes('Digital Skills')) mapped = 'Education & Digital Skills';
@@ -69,7 +69,7 @@ export const FocusAreas: React.FC = () => {
           </div>
 
           <div className="text-xs text-slate-500 font-mono hidden md:flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <span>05 Active Disciplinary Domains</span>
           </div>
         </div>
@@ -138,8 +138,10 @@ export const FocusAreas: React.FC = () => {
 
           {/* Right Column: Active Focus Area Detailed Stage */}
           <div className="lg:col-span-7" id="focus-area-detail">
-            <div className="rounded-3xl bg-white border border-slate-200/90 p-8 sm:p-12 shadow-xl relative overflow-hidden transition-all duration-500 min-h-[500px] flex flex-col justify-between">
-              
+            <div
+              key={activeArea.id}
+              className="rounded-3xl bg-white border border-slate-200/90 p-8 sm:p-12 shadow-xl relative overflow-hidden transition-all duration-300 min-h-[500px] flex flex-col justify-between animate-fadeIn"
+            >
               {/* Top Accent Gradient Line */}
               <div
                 className="absolute top-0 left-0 right-0 h-2 transition-all duration-500"
@@ -207,8 +209,8 @@ export const FocusAreas: React.FC = () => {
                 <a
                   href="#contact"
                   onClick={() => handleInquireDiscipline(activeArea.title)}
-                  className="inline-flex items-center gap-2 text-sm font-semibold transition-colors hover:underline group cursor-pointer"
-                  style={{ color: activeArea.accentHex }}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-white shadow-xs hover:shadow-md transition-all duration-200 group cursor-pointer active:scale-[0.98]"
+                  style={{ backgroundColor: activeArea.accentHex }}
                 >
                   <span>Inquire about this discipline</span>
                   <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />

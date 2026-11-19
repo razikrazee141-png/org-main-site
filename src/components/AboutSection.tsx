@@ -1,5 +1,5 @@
 import React from 'react';
-import { Target, Layers, ShieldCheck, CheckCircle2, Award } from 'lucide-react';
+import { Target, Layers, ShieldCheck, CheckCircle2, Award, ArrowRight } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { DirectorsShowcase } from './DirectorsShowcase';
 
@@ -31,27 +31,27 @@ export const AboutSection: React.FC = () => {
           <div className="lg:col-span-6 space-y-8">
             
             {/* Purpose Panel */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#FAF9F6] to-white border border-slate-200/90 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4">
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#FAF9F6] to-white border border-slate-200/90 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4 relative overflow-hidden group">
               <div className="flex items-center gap-3">
-                <span className="p-2.5 rounded-xl bg-[#125EA2] text-white shadow-xs">
+                <span className="p-2.5 rounded-xl bg-[#125EA2] text-white shadow-xs group-hover:scale-105 transition-transform duration-200">
                   <Target className="w-5 h-5" />
                 </span>
                 <h3 className="text-xl font-bold text-slate-900">{about.purposeHeading}</h3>
               </div>
-              <p className="text-base text-slate-600 leading-relaxed">
+              <p className="text-base text-slate-600 leading-relaxed font-normal">
                 {about.purposeText}
               </p>
             </div>
 
             {/* Multidisciplinary Approach Panel */}
-            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#FAF9F6] to-white border border-slate-200/90 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4">
+            <div className="p-6 sm:p-8 rounded-3xl bg-gradient-to-b from-[#FAF9F6] to-white border border-slate-200/90 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 space-y-4 relative overflow-hidden group">
               <div className="flex items-center gap-3">
-                <span className="p-2.5 rounded-xl bg-[#388E3C] text-white shadow-xs">
+                <span className="p-2.5 rounded-xl bg-[#388E3C] text-white shadow-xs group-hover:scale-105 transition-transform duration-200">
                   <Layers className="w-5 h-5" />
                 </span>
                 <h3 className="text-xl font-bold text-slate-900">{about.approachHeading}</h3>
               </div>
-              <p className="text-base text-slate-600 leading-relaxed">
+              <p className="text-base text-slate-600 leading-relaxed font-normal">
                 {about.approachText}
               </p>
             </div>
@@ -94,7 +94,7 @@ export const AboutSection: React.FC = () => {
                     </h4>
                     <span className="text-xs font-bold text-slate-400 font-mono">0{index + 1}</span>
                   </div>
-                  <p className="text-sm text-slate-600 leading-relaxed">
+                  <p className="text-sm text-slate-600 leading-relaxed font-normal">
                     {pillar.desc}
                   </p>
                 </div>
@@ -103,7 +103,7 @@ export const AboutSection: React.FC = () => {
 
             {/* Organizational Transparency Notice */}
             <div className="pt-4 text-xs text-slate-400 leading-relaxed italic">
-              * Official organizational charters, executive appointments, and statutory registration filings are verified by NextGen governance.
+              * Official organizational charters, executive appointments, and statutory governance filings are upheld in strict compliance with NextGen governance.
             </div>
 
           </div>

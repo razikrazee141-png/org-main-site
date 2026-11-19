@@ -27,7 +27,7 @@ export const SITE_CONFIG = {
   brand: {
     name: 'NextGen',
     tagline: 'Leading Today, Shaping Tomorrow.',
-    shortBio: 'A multidisciplinary organisation working across technology, education, social services, and community development to create meaningful opportunities.',
+    shortBio: 'A multidisciplinary organisation working across software services, education, social services, and community development to create meaningful opportunities.',
   },
   
   navigation: [
@@ -42,7 +42,7 @@ export const SITE_CONFIG = {
     badge: 'Official Corporate Portal',
     headlinePrefix: 'Leading Today,',
     headlineHighlight: 'Shaping Tomorrow.',
-    subtext: 'NextGen is a forward-looking organisation dedicated to creating meaningful opportunities through technology, education, social services, and grassroots community development.',
+    subtext: 'NextGen is a forward-looking organisation dedicated to creating meaningful opportunities through software services, education, social services, and grassroots community development.',
     primaryCta: 'Discover NextGen',
     secondaryCta: 'Get in Touch',
   },
@@ -50,15 +50,15 @@ export const SITE_CONFIG = {
   about: {
     badge: 'About NextGen',
     heading: 'Bridging Innovation, Learning, and Social Impact',
-    overview: 'NextGen is an initiative designed to harness modern capability for public and community good. We believe that lasting societal advancement happens at the intersection of practical technology, accessible knowledge, and compassionate social support.',
+    overview: 'NextGen is an initiative designed to harness modern capability for public and community good. We believe that lasting societal advancement happens at the intersection of practical software services, accessible knowledge, and compassionate social support.',
     purposeHeading: 'Our Purpose',
     purposeText: 'Our primary objective is to build sustainable pathways for empowerment. By addressing real-world operational challenges for community organisations and unlocking digital opportunities for individuals, NextGen provides the groundwork for collective progress.',
     approachHeading: 'Multidisciplinary Approach',
-    approachText: 'Rather than isolating technical development from social responsibility, NextGen integrates software craft, educational empowerment, and civic engagement into a cohesive mission. Every initiative is grounded in responsibility, accessibility, and measurable utility.',
+    approachText: 'Rather than isolating technical development from social responsibility, NextGen integrates software services, educational empowerment, and civic engagement into a cohesive mission. Every initiative is grounded in responsibility, accessibility, and measurable utility.',
     pillars: [
       {
-        title: 'Technology as an Enabler',
-        desc: 'Developing dependable, user-friendly digital tools that simplify operations and improve organisational reach.',
+        title: 'Software Services & Practical Tools',
+        desc: 'Providing dependable software services and practical digital tools that simplify operations and improve organizational reach.',
         color: '#125EA2',
       },
       {
@@ -79,7 +79,7 @@ export const SITE_CONFIG = {
     ],
     directorsBadge: 'Leadership & Governance',
     directorsHeading: 'Board of Directors',
-    directorsSubtext: 'The executive directors guiding NextGen’s multidisciplinary mission across technology, education, social services, and community impact.',
+    directorsSubtext: 'The executive directors guiding NextGen’s multidisciplinary mission across software services, education, social services, and community impact.',
     directors: [
       {
         id: 'muhammed-rihab',
@@ -118,18 +118,18 @@ export const SITE_CONFIG = {
     {
       id: 'tech-solutions',
       number: '01',
-      title: 'Technology and Software Solutions',
-      summary: 'Delivering dependable digital solutions, purpose-built software architectures, and practical technical support for community organisations, non-profits, and growing enterprises.',
+      title: 'Software Services',
+      summary: 'Providing dependable software services, practical technical assistance, and accessible digital tools for community organisations, non-profits, and local initiatives.',
       accentColor: 'blue',
       accentHex: '#125EA2',
       iconName: 'CodeXml',
       scope: [
-        'Accessible, modern web portals and platforms',
-        'Organisational management and record digitization',
-        'Secure data workflows and administrative automation',
-        'Technical advisory and infrastructure consulting',
+        'Web portal assistance and digital platforms',
+        'Organisational records and digitization support',
+        'Administrative workflows and software assistance',
+        'Technical guidance and advisory support',
       ],
-      deliverablesSummary: 'Building robust, modern software tailored to institutional and civic workflows.',
+      deliverablesSummary: 'Providing dependable software services tailored to community and institutional needs.',
     },
     {
       id: 'education-tutorials',
@@ -205,8 +205,8 @@ export const SITE_CONFIG = {
     },
     mission: {
       label: 'Our Mission',
-      statement: 'To make learning, digital solutions, and meaningful social support more accessible through practical initiatives and responsible collaboration.',
-      interpretation: 'We carry out this mission by developing real-world software, providing transparent educational frameworks, and maintaining an enduring commitment to grassroots community service.',
+      statement: 'To make learning, software services, and meaningful social support more accessible through practical initiatives and responsible collaboration.',
+      interpretation: 'We carry out this mission by providing practical software services, transparent educational frameworks, and maintaining an enduring commitment to grassroots community service.',
     },
   },
 
@@ -242,6 +242,6 @@ export const SITE_CONFIG = {
 
   footer: {
     copyright: `© ${new Date().getFullYear()} NextGen. All rights reserved.`,
-    legalNote: 'NextGen is a multidisciplinary organisation committed to technology, education, social services, and community development.',
+    legalNote: 'NextGen is a multidisciplinary organisation committed to software services, education, social services, and community development.',
   },
 } as const;

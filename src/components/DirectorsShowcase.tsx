@@ -198,7 +198,7 @@ export const DirectorsShowcase: React.FC = () => {
                   </div>
 
                   <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-xl">
-                    Serving on the governing board of NextGen to steer multidisciplinary operations, uphold institutional ethics, and expand impactful initiatives across technology, education, social services, and community welfare.
+                    Serving on the governing board of NextGen to steer multidisciplinary operations, uphold institutional ethics, and expand impactful initiatives across software services, education, social services, and community welfare.
                   </p>
 
                   {/* Governance Pillars Pill Row */}
