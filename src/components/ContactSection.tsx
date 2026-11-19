@@ -852,12 +852,12 @@ export const ContactSection: React.FC = () => {
                         {status === 'submitting' ? (
                           <>
                             <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                            <span>Logging & Transmitting Official Communication...</span>
+                            <span>Submitting...</span>
                           </>
                         ) : (
                           <>
-                            <FileText className="w-4 h-4" />
-                            <span>Transmit Official Secretariat Enquiry</span>
+                            <Send className="w-4 h-4" />
+                            <span>Submit</span>
                           </>
                         )}
                       </button>
