@@ -61,12 +61,52 @@ export const Navbar: React.FC = () => {
         />
       )}
 
-      {/* Slim Top Bar in Lime with Small Dark Text */}
-      <div className="bg-[#B4F26B] text-[#06302B] py-1.5 px-3 sm:px-4 text-center text-[11px] sm:text-xs font-bold tracking-wide relative z-50 flex items-center justify-center gap-1.5 sm:gap-2">
-        <Sparkles className="w-3.5 h-3.5 shrink-0" />
-        <span className="truncate sm:overflow-visible">
-          Official Multidisciplinary Organization &bull; Software Services &bull; Education &bull; Social Welfare
-        </span>
+      {/* Slim Continuous Ticker / Marquee Bar in Lime */}
+      <div 
+        className="bg-[#B4F26B] text-[#06302B] py-1.5 overflow-hidden relative z-50 border-b border-[#06302B]/10 select-none"
+        aria-label="Official announcements ticker"
+      >
+        <div className="animate-marquee flex items-center whitespace-nowrap">
+          {/* Track 1 */}
+          <div className="flex items-center gap-6 sm:gap-8 px-4 text-xs font-bold tracking-wide shrink-0">
+            <span>Official Multidisciplinary Organization</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Education and Digital Skills</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Social Welfare & Community Development</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Software Services</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Official Multidisciplinary Organization</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Education and Digital Skills</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Social Welfare & Community Development</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Software Services</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+          </div>
+
+          {/* Track 2 (Identical seamless clone for infinite loop) */}
+          <div className="flex items-center gap-6 sm:gap-8 px-4 text-xs font-bold tracking-wide shrink-0" aria-hidden="true">
+            <span>Official Multidisciplinary Organization</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Education and Digital Skills</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Social Welfare & Community Development</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Software Services</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Official Multidisciplinary Organization</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Education and Digital Skills</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Social Welfare & Community Development</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+            <span>Software Services</span>
+            <span className="w-1.5 h-1.5 rounded-full bg-[#06302B]/60" />
+          </div>
+        </div>
       </div>
 
       {/* Sticky Dark-Green Navbar Below */}
