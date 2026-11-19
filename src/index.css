@@ -2,30 +2,47 @@
 
 @layer base {
   :root {
-    /* Biztop Signature Design Tokens */
+    /* Biztop Enterprise Design Tokens */
+    --green-950: #041F1B;      /* Darkest tone: mobile menu, dark focal elements */
     --green-900: #06302B;      /* Deep forest green: hero, header, dark cards, footer */
     --green-800: #0A3D37;
+    --green-700: #0D4A41;      /* Mid-tone green accents & borders */
     --lime-400: #B4F26B;       /* Primary accent: buttons, highlights, key words, icons */
-    --lime-300: #C7F68D;
+    --lime-300: #C9F78F;       /* Hover state for lime */
     --cream-50: #F7F6EC;       /* Main section background */
-    --white: #FFFFFF;          /* Cards */
+    --white: #FFFFFF;          /* Cards & light surfaces */
     --ink: #0B2B26;            /* Headings on light */
     --muted: #5B6B66;          /* Body text on light */
+    --line: rgba(6, 48, 43, 0.10); /* Subtle dividers */
+    --error: #D64545;          /* Soft red alert tone */
+    --success: #0D4A41;        /* Success green */
 
-    --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+    /* Typography */
+    --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 
-    /* Radii: large and friendly */
+    /* Radii: large, friendly, modern */
+    --radius-input: 12px;
     --radius-card: 24px;
-    --radius-input: 14px;
+    --radius-card-lg: 28px;
     --radius-pill: 9999px;
 
-    --ease-biztop: cubic-bezier(0.16, 1, 0.3, 1);
+    /* Soft green-tinted shadows */
+    --shadow-sm: 0 2px 8px rgba(6, 48, 43, 0.04);
+    --shadow-md: 0 8px 24px -4px rgba(6, 48, 43, 0.08);
+    --shadow-lg: 0 16px 36px -6px rgba(6, 48, 43, 0.12);
+
+    /* Motion Tokens */
+    --ease: cubic-bezier(.22, .61, .36, 1);
+    --duration-hover: 200ms;
+    --duration-reveal: 500ms;
+    --duration-directors: 800ms;
   }
 
   html {
     scroll-behavior: smooth;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     background-color: var(--cream-50);
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -36,32 +53,45 @@
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
     line-height: 1.6;
+    min-height: 100dvh;
   }
 
-  /* Section Headings: semibold, dark ink, sentence case */
+  /* Safe Area Inset Support for Notched Devices */
+  .safe-top {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Headings: semibold, dark ink, tight tracking */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-sans);
     color: var(--ink);
     letter-spacing: -0.025em;
   }
 
-  /* Sleek Minimalist Scrollbar */
-  ::-webkit-scrollbar {
-    width: 8px;
-    height: 8px;
+  /* Inputs, selects, and textareas: 16px minimum on mobile to prevent iOS auto-zoom */
+  input, select, textarea {
+    font-size: 16px !important;
   }
 
-  ::-webkit-scrollbar-track {
-    background: #EFEEDA;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background: #06302B;
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background: #0A3D37;
+  /* Custom Desktop Scrollbar */
+  @media (min-width: 1024px) {
+    ::-webkit-scrollbar {
+      width: 7px;
+      height: 7px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #EFEEDA;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #06302B;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #0D4A41;
+    }
   }
 
   /* High-Contrast Accessible Keyboard Focus */
@@ -71,25 +101,37 @@
   }
 }
 
+/* Fluid Hero Headline Clamp */
+.fluid-hero-headline {
+  font-size: clamp(2rem, 7vw + 0.5rem, 5rem);
+  line-height: 1.08;
+  letter-spacing: -0.03em;
+}
+
 /* Biztop Pill Buttons with Arrow Chip */
 .btn-biztop-pill {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
+  gap: 0.75rem;
+  min-height: 48px;
   padding: 0.75rem 1.625rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background-color: var(--lime-400);
   color: var(--green-900);
   font-weight: 700;
-  font-size: 0.875rem;
-  transition: transform 0.2s var(--ease-biztop), box-shadow 0.2s var(--ease-biztop), background-color 0.2s ease;
+  font-size: 0.9375rem;
+  transition: transform var(--duration-hover) var(--ease), 
+              box-shadow var(--duration-hover) var(--ease), 
+              background-color var(--duration-hover) ease;
   cursor: pointer;
+  touch-action: manipulation;
+  user-select: none;
 }
 
 .btn-biztop-pill:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px -4px rgba(180, 242, 107, 0.45);
+  box-shadow: 0 10px 24px -4px rgba(180, 242, 107, 0.45);
   background-color: var(--lime-300);
 }
 
@@ -101,12 +143,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.625rem;
-  height: 1.625rem;
-  border-radius: 9999px;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-pill);
   background-color: var(--green-900);
   color: var(--lime-400);
-  transition: transform 0.2s ease;
+  transition: transform var(--duration-hover) ease;
+  flex-shrink: 0;
 }
 
 .btn-biztop-pill:hover .arrow-chip {
@@ -118,17 +161,19 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 0.625rem;
+  min-height: 48px;
   padding: 0.75rem 1.625rem;
-  border-radius: 9999px;
+  border-radius: var(--radius-pill);
   background-color: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
   color: #FFFFFF;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.9375rem;
   backdrop-filter: blur(8px);
-  transition: all 0.2s ease;
+  transition: all var(--duration-hover) ease;
   cursor: pointer;
+  touch-action: manipulation;
 }
 
 .btn-biztop-secondary:hover {
@@ -137,13 +182,17 @@
   transform: translateY(-2px);
 }
 
-/* Eyebrow Label with Star */
+.btn-biztop-secondary:active {
+  transform: scale(0.98);
+}
+
+/* Eyebrow Label with Star / Icon */
 .biztop-eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.85rem;
-  border-radius: 9999px;
+  gap: 0.45rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill);
   background-color: rgba(180, 242, 107, 0.25);
   border: 1px solid rgba(180, 242, 107, 0.5);
   color: var(--green-900);
@@ -156,9 +205,9 @@
 .biztop-eyebrow-dark {
   display: inline-flex;
   align-items: center;
-  gap: 0.4rem;
-  padding: 0.3rem 0.85rem;
-  border-radius: 9999px;
+  gap: 0.45rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: var(--radius-pill);
   background-color: rgba(180, 242, 107, 0.15);
   border: 1px solid rgba(180, 242, 107, 0.3);
   color: var(--lime-400);
@@ -168,18 +217,20 @@
   text-transform: uppercase;
 }
 
-/* Biztop Rounded Card: 20-28px radius, soft low-opacity shadow */
+/* Biztop Rounded Card: 20-28px radius, soft low-opacity green shadow */
 .biztop-card {
   background-color: var(--white);
-  border-radius: 24px;
-  border: 1px solid rgba(11, 43, 38, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(6, 48, 43, 0.05), 0 2px 6px -1px rgba(6, 48, 43, 0.03);
-  transition: transform 0.2s var(--ease-biztop), box-shadow 0.2s var(--ease-biztop), border-color 0.2s ease;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-hover) var(--ease), 
+              box-shadow var(--duration-hover) var(--ease), 
+              border-color var(--duration-hover) ease;
 }
 
 .biztop-card:hover {
   transform: translateY(-3px);
-  box-shadow: 0 12px 28px -4px rgba(6, 48, 43, 0.09), 0 4px 10px -2px rgba(6, 48, 43, 0.04);
+  box-shadow: var(--shadow-md);
   border-color: rgba(6, 48, 43, 0.15);
 }
 
@@ -189,22 +240,25 @@
   color: #FFFFFF;
 }
 
-/* Form Inputs: 52px tall, 12-14px radius, light cream fill, lime focus ring */
+/* Form Inputs: 52-56px tall, 12-14px radius, cream fill, lime focus ring */
 .biztop-input {
+  min-height: 52px;
   height: 52px;
-  border-radius: 14px;
+  border-radius: var(--radius-input);
   background-color: #F7F6EC;
   border: 1px solid rgba(11, 43, 38, 0.15);
-  padding: 0 1rem;
+  padding: 0 1.125rem;
   color: var(--ink);
-  font-size: 0.9375rem;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+  font-size: 1rem;
+  transition: border-color var(--duration-hover) ease, 
+              box-shadow var(--duration-hover) ease, 
+              background-color var(--duration-hover) ease;
 }
 
 .biztop-input:focus {
   outline: none;
-  border-color: var(--lime-400);
-  box-shadow: 0 0 0 3px rgba(180, 242, 107, 0.5);
+  border-color: var(--green-900);
+  box-shadow: 0 0 0 3px rgba(180, 242, 107, 0.55);
   background-color: #FFFFFF;
 }
 
@@ -221,7 +275,17 @@
 }
 
 .animate-fadeRise {
-  animation: fadeRise 0.6s var(--ease-biztop) forwards;
+  animation: fadeRise var(--duration-reveal) var(--ease) forwards;
+}
+
+/* Smooth Fade In */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
 }
 
 /* Reduced Motion Support */

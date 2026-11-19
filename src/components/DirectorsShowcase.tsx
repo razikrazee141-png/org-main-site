@@ -44,11 +44,11 @@ export const DirectorsShowcase: React.FC = () => {
 
   return (
     <div
-      className="mt-20 pt-16 border-t border-slate-300/80 relative"
+      className="mt-14 sm:mt-20 pt-12 sm:pt-16 border-t border-slate-300/80 relative"
       aria-label="NextGen Board of Directors"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
         <div className="space-y-2">
           <div className="biztop-eyebrow">
             <ShieldCheck className="w-3.5 h-3.5 text-[#06302B]" />
@@ -62,7 +62,7 @@ export const DirectorsShowcase: React.FC = () => {
           </p>
         </div>
 
-        {/* Play/Pause & Arrow Navigation Controls */}
+        {/* Play/Pause & Arrow Navigation Controls with 44x44px Touch Targets */}
         <div className="flex items-center gap-2">
           {/* Indicator Dots */}
           <div className="hidden sm:flex items-center gap-1.5 mr-2" aria-hidden="true">
@@ -81,11 +81,11 @@ export const DirectorsShowcase: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={handlePrev}
-              className="p-2.5 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer"
+              className="w-11 h-11 flex items-center justify-center p-0 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer touch-manipulation active:scale-95"
               aria-label="Previous Director"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -93,7 +93,7 @@ export const DirectorsShowcase: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsPaused(!isPaused)}
-              className="p-2.5 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer"
+              className="w-11 h-11 flex items-center justify-center p-0 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer touch-manipulation active:scale-95"
               aria-label={isPaused ? 'Resume auto-play' : 'Pause auto-play'}
               title={isPaused ? 'Resume auto-transition' : 'Pause auto-transition'}
             >
@@ -102,7 +102,7 @@ export const DirectorsShowcase: React.FC = () => {
             <button
               type="button"
               onClick={handleNext}
-              className="p-2.5 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer"
+              className="w-11 h-11 flex items-center justify-center p-0 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer touch-manipulation active:scale-95"
               aria-label="Next Director"
             >
               <ChevronRight className="w-4 h-4" />
@@ -115,7 +115,9 @@ export const DirectorsShowcase: React.FC = () => {
       <div
         onMouseEnter={() => setIsPaused(true)}
         onMouseLeave={() => setIsPaused(false)}
-        className="relative rounded-[28px] bg-[#06302B] text-white p-6 sm:p-10 lg:p-12 shadow-2xl overflow-hidden border border-[#0A3D37]"
+        onTouchStart={() => setIsPaused(true)}
+        onTouchEnd={() => setIsPaused(false)}
+        className="relative rounded-[24px] sm:rounded-[28px] bg-[#06302B] text-white p-5 sm:p-8 lg:p-12 shadow-2xl overflow-hidden border border-[#0A3D37]"
       >
         {/* Animated Lime Progress Bar along the top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 overflow-hidden z-20">
@@ -127,24 +129,24 @@ export const DirectorsShowcase: React.FC = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
           
-          {/* Uniform 24px Rounded Photo Frame with Lime Outline & Smooth 800ms Transition */}
+          {/* Uniform 24px Rounded Photo Frame with Lime Outline & Smooth 700-800ms Transition */}
           <div className="md:col-span-5 flex justify-center">
-            <div className="relative group/photo">
+            <div className="relative group/photo w-full flex justify-center">
               
               {/* Soft Lime Glow behind the Active Frame */}
               <div className="absolute -inset-3 rounded-[28px] bg-[#B4F26B]/20 blur-xl opacity-75 pointer-events-none" />
 
-              {/* Uniform Frame Container: 24px Radius */}
-              <div className="relative w-64 h-80 sm:w-72 sm:h-96 aspect-[4/5] rounded-[24px] overflow-hidden bg-slate-900 border-2 border-[#B4F26B] shadow-2xl">
+              {/* Uniform Frame Container: 24px Radius, Zero Layout Shift */}
+              <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-[4/5] rounded-[24px] overflow-hidden bg-slate-900 border-2 border-[#B4F26B] shadow-2xl">
                 {directors.map((director, index) => {
                   const isActive = index === currentIndex;
                   return (
                     <div
                       key={director.id}
-                      className={`absolute inset-0 transition-all duration-800 ease-in-out ${
+                      className={`absolute inset-0 transition-all duration-700 sm:duration-800 ease-[cubic-bezier(.22,.61,.36,1)] ${
                         isActive
-                          ? 'opacity-100 scale-105 z-10 pointer-events-auto'
-                          : 'opacity-0 scale-100 z-0 pointer-events-none'
+                          ? 'opacity-100 scale-100 z-10 pointer-events-auto'
+                          : 'opacity-0 scale-105 z-0 pointer-events-none'
                       }`}
                     >
                       <img
@@ -175,18 +177,18 @@ export const DirectorsShowcase: React.FC = () => {
               return (
                 <div
                   key={director.id}
-                  className={`transition-all duration-800 ease-in-out ${
+                  className={`transition-all duration-700 sm:duration-800 ease-[cubic-bezier(.22,.61,.36,1)] ${
                     isActive
                       ? 'opacity-100 translate-y-0 relative z-10'
-                      : 'opacity-0 translate-y-3 absolute inset-0 pointer-events-none z-0'
-                  } space-y-4`}
+                      : 'opacity-0 translate-y-4 absolute inset-0 pointer-events-none z-0'
+                  } space-y-3 sm:space-y-4`}
                 >
                   <div className="space-y-1.5">
                     <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#B4F26B] font-mono">
                       <span>Executive Board of Directors</span>
                     </div>
 
-                    <h4 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
+                    <h4 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight text-white leading-tight">
                       {director.name}
                     </h4>
 

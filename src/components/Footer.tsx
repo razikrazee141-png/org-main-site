@@ -9,11 +9,11 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-[#06302B] text-slate-200 pt-16 pb-12 border-t border-white/[0.08] relative">
+    <footer className="bg-[#06302B] text-slate-200 pt-14 pb-12 sm:pt-16 sm:pb-14 border-t border-white/[0.08] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-white/[0.08] items-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-10 pb-12 border-b border-white/[0.08] items-start">
           
           {/* Brand Column */}
           <div className="md:col-span-6 space-y-4">
@@ -35,12 +35,12 @@ export const Footer: React.FC = () => {
             <h4 className="text-xs font-bold uppercase tracking-widest text-[#B4F26B] font-mono">
               Corporate Navigation
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-1 text-sm">
               {SITE_CONFIG.navigation.map((item) => (
                 <li key={item.id}>
                   <a
                     href={item.href}
-                    className="text-slate-300 hover:text-[#B4F26B] transition-colors text-xs sm:text-sm"
+                    className="block py-1.5 text-slate-300 hover:text-[#B4F26B] transition-colors text-sm touch-manipulation"
                   >
                     {item.label}
                   </a>
@@ -59,7 +59,7 @@ export const Footer: React.FC = () => {
             </p>
             <a
               href="#contact"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B4F26B] hover:text-white transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B4F26B] hover:text-white transition-colors py-1"
             >
               <span>Access Official Contact Form</span>
               <span>&rarr;</span>
@@ -69,7 +69,7 @@ export const Footer: React.FC = () => {
               <button
                 type="button"
                 onClick={scrollToTop}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/[0.08] hover:bg-[#B4F26B] hover:text-[#06302B] border border-white/10 text-xs font-semibold text-slate-200 transition-all duration-200 cursor-pointer shadow-sm group"
+                className="inline-flex items-center gap-2 px-5 py-2.5 min-h-[44px] rounded-full bg-white/[0.08] hover:bg-[#B4F26B] hover:text-[#06302B] border border-white/10 text-xs font-semibold text-slate-200 transition-all duration-200 cursor-pointer shadow-sm group touch-manipulation active:scale-95"
                 aria-label="Back to top"
               >
                 <ArrowUp className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-y-0.5" />
@@ -82,7 +82,7 @@ export const Footer: React.FC = () => {
 
         {/* Bottom Legal & Copyright */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-300/80">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 text-center sm:text-left">
             <span>{SITE_CONFIG.footer.copyright}</span>
           </div>
 

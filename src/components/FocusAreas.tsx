@@ -50,11 +50,11 @@ export const FocusAreas: React.FC = () => {
   };
 
   return (
-    <section id="focus-areas" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative bg-white border-b border-slate-200/80">
+    <section id="focus-areas" className="py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 relative bg-white border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
           <div className="max-w-2xl space-y-3">
             <div className="biztop-eyebrow">
               <Sparkles className="w-3.5 h-3.5 text-[#06302B] shrink-0 fill-[#06302B]" />
@@ -129,7 +129,7 @@ export const FocusAreas: React.FC = () => {
           <div className="lg:col-span-7" id="focus-area-detail">
             <div
               key={activeArea.id}
-              className="rounded-[28px] bg-[#F7F6EC] p-8 sm:p-12 shadow-sm border border-slate-200/90 relative overflow-hidden transition-all duration-200 min-h-[480px] flex flex-col justify-between animate-fadeIn"
+              className="rounded-[24px] sm:rounded-[28px] bg-[#F7F6EC] p-5 sm:p-8 lg:p-12 shadow-sm border border-slate-200/90 relative overflow-hidden transition-all duration-200 min-h-[auto] sm:min-h-[480px] flex flex-col justify-between animate-fadeIn"
             >
               {/* Top Accent Line */}
               <div

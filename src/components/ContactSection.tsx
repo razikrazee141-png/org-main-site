@@ -286,11 +286,11 @@ export const ContactSection: React.FC = () => {
   };
 
   return (
-    <section id="contact" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative bg-[#F7F6EC] border-t border-slate-200/80">
+    <section id="contact" className="py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 relative bg-[#F7F6EC] border-t border-slate-200/80">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="max-w-3xl space-y-3.5 mb-16">
+        <div className="max-w-3xl space-y-3.5 mb-10 sm:mb-14">
           <div className="biztop-eyebrow">
             <Sparkles className="w-3.5 h-3.5 text-[#06302B] shrink-0 fill-[#06302B]" />
             <span>Official Secretariat Gateway</span>
@@ -425,7 +425,7 @@ export const ContactSection: React.FC = () => {
 
           {/* Right Column: Biztop 24px Rounded Card Enquiry Form */}
           <div className="lg:col-span-7">
-            <div className="bg-white rounded-[24px] p-8 sm:p-10 shadow-lg border border-slate-200/90 relative overflow-hidden">
+            <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 lg:p-10 shadow-lg border border-slate-200/90 relative overflow-hidden">
               
               {/* Header Bar */}
               <div className="mb-6 pb-4 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
@@ -446,118 +446,32 @@ export const ContactSection: React.FC = () => {
 
               {/* Form Content / Success State */}
               <div>
-                {status === 'success' && inquiryReceipt ? (
-                  <div className="space-y-6 animate-fadeIn">
-                    {/* Friendly Soft Lime/Green Receipt Card */}
-                    <div className="p-7 rounded-[20px] bg-[#F7F6EC] border border-[#B4F26B] space-y-5 text-left relative overflow-hidden shadow-sm">
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-[#B4F26B] text-[#06302B] flex items-center justify-center shrink-0">
-                            <BadgeCheck className="w-6 h-6 stroke-[2.5]" />
-                          </div>
-                          <div>
-                            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#06302B]">
-                              Official Filing Acknowledgment
-                            </span>
-                            <h4 className="text-lg font-extrabold text-[#0B2B26]">
-                              Enquiry Logged with Secretarial Registry
-                            </h4>
-                          </div>
-                        </div>
-
-                        <div className="text-left sm:text-right">
-                          <span className="text-[10px] font-mono text-[#5B6B66] block uppercase">Timestamp</span>
-                          <span className="text-xs font-bold text-[#06302B]">{inquiryReceipt.timestamp}</span>
-                        </div>
-                      </div>
-
-                      {/* Filing Reference Details */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
-                            Filing Reference Code
-                          </span>
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="font-mono text-xs font-black text-[#06302B]">
-                              {inquiryReceipt.inquiryId}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleCopy(inquiryReceipt.inquiryId, 'receipt')}
-                              className="text-[11px] font-bold text-[#06302B] hover:underline flex items-center gap-1 cursor-pointer"
-                              title="Copy Filing Reference"
-                            >
-                              {copiedType === 'receipt' ? (
-                                <>
-                                  <Check className="w-3 h-3 text-emerald-600" />
-                                  <span>Copied</span>
-                                </>
-                              ) : (
-                                <>
-                                  <Copy className="w-3 h-3" />
-                                  <span>Copy</span>
-                                </>
-                              )}
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
-                            Routing Status
-                          </span>
-                          <div className="font-bold text-[#0B2B26]">
-                            Secretarial Review Desk
-                          </div>
-                        </div>
-
-                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
-                            Correspondent
-                          </span>
-                          <div className="font-bold text-[#0B2B26] truncate">
-                            {inquiryReceipt.name}
-                            {inquiryReceipt.organization && (
-                              <span className="text-[#5B6B66] font-normal"> ({inquiryReceipt.organization})</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
-                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
-                            Classification
-                          </span>
-                          <div className="font-bold text-[#0B2B26] truncate">
-                            {inquiryReceipt.subject}
-                          </div>
-                        </div>
-                      </div>
-
-                      <div className="p-3.5 rounded-[14px] bg-[#B4F26B]/25 border border-[#B4F26B] text-xs text-[#06302B] space-y-1">
-                        <span className="font-bold flex items-center gap-1.5 text-[#06302B]">
-                          <ShieldCheck className="w-4 h-4 text-[#06302B]" />
-                          <span>Secretarial Acknowledgment Guarantee</span>
-                        </span>
-                        <p className="text-[11px] leading-relaxed font-normal">
-                          Your submission has been formally recorded. A designated secretarial officer will review the brief and contact you at <span className="font-bold underline">{inquiryReceipt.email}</span> within 24–48 business hours.
-                        </p>
-                      </div>
+                {status === 'success' ? (
+                  <div className="py-10 px-4 sm:px-8 text-center space-y-5 animate-fadeIn">
+                    <div className="w-16 h-16 rounded-full bg-[#B4F26B] text-[#06302B] flex items-center justify-center mx-auto shadow-md">
+                      <CheckCircle2 className="w-9 h-9 stroke-[2.5]" />
                     </div>
 
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                      <p className="text-xs text-[#5B6B66] italic">
-                        Please save or copy your filing reference code for future correspondence.
+                    <div className="space-y-2 max-w-md mx-auto">
+                      <h4 className="text-2xl sm:text-3xl font-extrabold text-[#0B2B26] tracking-tight">
+                        Successfully Submitted
+                      </h4>
+                      <p className="text-sm sm:text-base text-[#5B6B66] leading-relaxed">
+                        Thank you for reaching out to NextGen. We have received your inquiry and our team will get back to you shortly.
                       </p>
+                    </div>
+
+                    <div className="pt-3">
                       <button
                         type="button"
                         onClick={() => {
                           setStatus('idle');
                           setInquiryReceipt(null);
                         }}
-                        className="btn-biztop-pill text-xs shadow-xs"
+                        className="btn-biztop-pill text-sm shadow-sm"
                       >
-                        <RotateCcw className="w-3.5 h-3.5" />
-                        <span>File Another Official Enquiry</span>
+                        <RotateCcw className="w-4 h-4" />
+                        <span>Send Another Message</span>
                       </button>
                     </div>
                   </div>
