@@ -2,118 +2,217 @@
 
 @layer base {
   :root {
-    --font-heading: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    --font-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    
-    --brand-blue: #125EA2;
-    --brand-blue-dark: #0D47A1;
-    --brand-green: #388E3C;
-    --brand-red: #ED2924;
-    --brand-amber: #FFA726;
+    /* Biztop Signature Design Tokens */
+    --green-900: #06302B;      /* Deep forest green: hero, header, dark cards, footer */
+    --green-800: #0A3D37;
+    --lime-400: #B4F26B;       /* Primary accent: buttons, highlights, key words, icons */
+    --lime-300: #C7F68D;
+    --cream-50: #F7F6EC;       /* Main section background */
+    --white: #FFFFFF;          /* Cards */
+    --ink: #0B2B26;            /* Headings on light */
+    --muted: #5B6B66;          /* Body text on light */
+
+    --font-sans: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+
+    /* Radii: large and friendly */
+    --radius-card: 24px;
+    --radius-input: 14px;
+    --radius-pill: 9999px;
+
+    --ease-biztop: cubic-bezier(0.16, 1, 0.3, 1);
   }
 
   html {
     scroll-behavior: smooth;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    background-color: var(--cream-50);
   }
 
   body {
-    font-family: var(--font-body);
-    background-color: #FAF9F6;
-    color: #0F172A;
+    font-family: var(--font-sans);
+    background-color: var(--cream-50);
+    color: var(--ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
+    line-height: 1.6;
   }
 
+  /* Section Headings: semibold, dark ink, sentence case */
   h1, h2, h3, h4, h5, h6 {
-    font-family: var(--font-heading);
+    font-family: var(--font-sans);
+    color: var(--ink);
     letter-spacing: -0.025em;
   }
 
-  /* Sleek minimalist Apple-grade scrollbar */
+  /* Sleek Minimalist Scrollbar */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
   }
 
   ::-webkit-scrollbar-track {
-    background: #FAF9F6;
+    background: #EFEEDA;
   }
 
   ::-webkit-scrollbar-thumb {
-    background: #CBD5E1;
+    background: #06302B;
     border-radius: 9999px;
-    border: 2px solid #FAF9F6;
   }
 
   ::-webkit-scrollbar-thumb:hover {
-    background: #94A3B8;
+    background: #0A3D37;
   }
 
-  /* Accessible outline focus for keyboard users */
+  /* High-Contrast Accessible Keyboard Focus */
   :focus-visible {
-    outline: 2px solid #125EA2;
+    outline: 2px solid var(--lime-400);
     outline-offset: 3px;
   }
 }
 
-/* Glass & editorial surface utilities */
-.glass-nav {
-  background: rgba(250, 249, 246, 0.85);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-bottom: 1px solid rgba(226, 232, 240, 0.75);
+/* Biztop Pill Buttons with Arrow Chip */
+.btn-biztop-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.625rem;
+  padding: 0.75rem 1.625rem;
+  border-radius: 9999px;
+  background-color: var(--lime-400);
+  color: var(--green-900);
+  font-weight: 700;
+  font-size: 0.875rem;
+  transition: transform 0.2s var(--ease-biztop), box-shadow 0.2s var(--ease-biztop), background-color 0.2s ease;
+  cursor: pointer;
 }
 
-.glass-card {
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(226, 232, 240, 0.85);
+.btn-biztop-pill:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px -4px rgba(180, 242, 107, 0.45);
+  background-color: var(--lime-300);
 }
 
-.dark-surface {
-  background: radial-gradient(circle at 50% 0%, #11223F 0%, #0A1424 50%, #060B14 100%);
+.btn-biztop-pill:active {
+  transform: scale(0.98);
 }
 
-.brand-blue-gradient {
-  background: linear-gradient(135deg, #125EA2 0%, #0D47A1 100%);
+.btn-biztop-pill .arrow-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.625rem;
+  height: 1.625rem;
+  border-radius: 9999px;
+  background-color: var(--green-900);
+  color: var(--lime-400);
+  transition: transform 0.2s ease;
 }
 
-/* Institutional elevation and interactive sheen */
-.hover-card-elevate {
-  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.28s ease;
+.btn-biztop-pill:hover .arrow-chip {
+  transform: translateX(3px);
 }
 
-.hover-card-elevate:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -15px rgba(18, 94, 162, 0.14);
+/* Biztop Secondary Pill Button */
+.btn-biztop-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.625rem;
+  border-radius: 9999px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.875rem;
+  backdrop-filter: blur(8px);
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-/* Restrained accent borders */
-.border-brand-subtle {
-  border-color: rgba(18, 94, 162, 0.15);
+.btn-biztop-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+  border-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-2px);
 }
 
-/* Custom subtle pattern overlay */
-.subtle-grid {
-  background-size: 40px 40px;
-  background-image: 
-    linear-gradient(to right, rgba(18, 94, 162, 0.035) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(18, 94, 162, 0.035) 1px, transparent 1px);
+/* Eyebrow Label with Star */
+.biztop-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  background-color: rgba(180, 242, 107, 0.25);
+  border: 1px solid rgba(180, 242, 107, 0.5);
+  color: var(--green-900);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-/* Institutional seal watermark texture */
-.institutional-watermark {
-  background-image: radial-gradient(rgba(18, 94, 162, 0.04) 1px, transparent 1px);
-  background-size: 24px 24px;
+.biztop-eyebrow-dark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 9999px;
+  background-color: rgba(180, 242, 107, 0.15);
+  border: 1px solid rgba(180, 242, 107, 0.3);
+  color: var(--lime-400);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
-@keyframes fadeIn {
+/* Biztop Rounded Card: 20-28px radius, soft low-opacity shadow */
+.biztop-card {
+  background-color: var(--white);
+  border-radius: 24px;
+  border: 1px solid rgba(11, 43, 38, 0.08);
+  box-shadow: 0 4px 20px -2px rgba(6, 48, 43, 0.05), 0 2px 6px -1px rgba(6, 48, 43, 0.03);
+  transition: transform 0.2s var(--ease-biztop), box-shadow 0.2s var(--ease-biztop), border-color 0.2s ease;
+}
+
+.biztop-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px -4px rgba(6, 48, 43, 0.09), 0 4px 10px -2px rgba(6, 48, 43, 0.04);
+  border-color: rgba(6, 48, 43, 0.15);
+}
+
+/* Dark Green Section Utility */
+.biztop-dark-section {
+  background-color: var(--green-900);
+  color: #FFFFFF;
+}
+
+/* Form Inputs: 52px tall, 12-14px radius, light cream fill, lime focus ring */
+.biztop-input {
+  height: 52px;
+  border-radius: 14px;
+  background-color: #F7F6EC;
+  border: 1px solid rgba(11, 43, 38, 0.15);
+  padding: 0 1rem;
+  color: var(--ink);
+  font-size: 0.9375rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.biztop-input:focus {
+  outline: none;
+  border-color: var(--lime-400);
+  box-shadow: 0 0 0 3px rgba(180, 242, 107, 0.5);
+  background-color: #FFFFFF;
+}
+
+/* Fluid Staggered Fade Up */
+@keyframes fadeRise {
   from {
     opacity: 0;
-    transform: translateY(8px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -121,24 +220,11 @@
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.animate-fadeRise {
+  animation: fadeRise 0.6s var(--ease-biztop) forwards;
 }
 
-@keyframes pulseSubtle {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.7;
-  }
-}
-
-.animate-pulseSubtle {
-  animation: pulseSubtle 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
-}
-
-/* Respect user's reduced motion preferences */
+/* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;

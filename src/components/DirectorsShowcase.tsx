@@ -8,8 +8,8 @@ export const DirectorsShowcase: React.FC = () => {
   const [isPaused, setIsPaused] = useState(false);
   const [progress, setProgress] = useState(0);
 
-  const INTERVAL_DURATION = 4500; // 4.5 seconds per director for comfortable reading
-  const TICK_INTERVAL = 30; // Smooth progress bar tick
+  const INTERVAL_DURATION = 4500; // 4.5s per director
+  const TICK_INTERVAL = 30; // Smooth tick
 
   useEffect(() => {
     if (isPaused) return;
@@ -44,20 +44,20 @@ export const DirectorsShowcase: React.FC = () => {
 
   return (
     <div
-      className="mt-20 pt-16 border-t border-slate-200/80 relative"
+      className="mt-20 pt-16 border-t border-slate-300/80 relative"
       aria-label="NextGen Board of Directors"
     >
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
         <div className="space-y-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold tracking-wider uppercase text-[#125EA2] bg-[#125EA2]/10 border border-[#125EA2]/20">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#125EA2]" />
+          <div className="biztop-eyebrow">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#06302B]" />
             <span>{SITE_CONFIG.about.directorsBadge}</span>
           </div>
-          <h3 className="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">
+          <h3 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0B2B26]">
             {SITE_CONFIG.about.directorsHeading}
           </h3>
-          <p className="text-sm sm:text-base text-slate-600 max-w-2xl font-normal">
+          <p className="text-sm sm:text-base text-[#5B6B66] max-w-2xl font-normal">
             {SITE_CONFIG.about.directorsSubtext}
           </p>
         </div>
@@ -71,9 +71,9 @@ export const DirectorsShowcase: React.FC = () => {
                 key={idx}
                 type="button"
                 onClick={() => handleSelectDirector(idx)}
-                className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
                   idx === currentIndex
-                    ? 'w-6 bg-[#125EA2]'
+                    ? 'w-6 bg-[#06302B]'
                     : 'w-2 bg-slate-300 hover:bg-slate-400'
                 }`}
                 aria-label={`Go to director ${idx + 1}`}
@@ -81,11 +81,11 @@ export const DirectorsShowcase: React.FC = () => {
             ))}
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1.5">
             <button
               type="button"
               onClick={handlePrev}
-              className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+              className="p-2.5 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer"
               aria-label="Previous Director"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -93,16 +93,16 @@ export const DirectorsShowcase: React.FC = () => {
             <button
               type="button"
               onClick={() => setIsPaused(!isPaused)}
-              className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+              className="p-2.5 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer"
               aria-label={isPaused ? 'Resume auto-play' : 'Pause auto-play'}
               title={isPaused ? 'Resume auto-transition' : 'Pause auto-transition'}
             >
-              {isPaused ? <Play className="w-4 h-4 text-[#125EA2]" /> : <Pause className="w-4 h-4 text-slate-500" />}
+              {isPaused ? <Play className="w-4 h-4 text-[#06302B]" /> : <Pause className="w-4 h-4 text-slate-500" />}
             </button>
             <button
               type="button"
               onClick={handleNext}
-              className="p-2.5 rounded-xl border border-slate-200 hover:border-slate-300 hover:bg-slate-50 text-slate-700 transition-colors cursor-pointer"
+              className="p-2.5 rounded-full border border-slate-300 hover:bg-[#B4F26B] hover:border-[#B4F26B] text-[#06302B] transition-colors cursor-pointer"
               aria-label="Next Director"
             >
               <ChevronRight className="w-4 h-4" />
@@ -111,41 +111,40 @@ export const DirectorsShowcase: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Rotating Showcase Stage with Cinematic Transitions */}
-      <div className="relative rounded-3xl bg-gradient-to-br from-slate-900 via-[#0B1528] to-[#12284C] text-white p-6 sm:p-10 lg:p-12 shadow-2xl overflow-hidden border border-slate-800">
-        
-        {/* Subtle background ambient brand glow */}
-        <div className="absolute top-0 right-0 w-96 h-96 rounded-full bg-[#125EA2]/20 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-80 h-80 rounded-full bg-[#388E3C]/15 blur-3xl pointer-events-none" />
-
-        {/* Animated Progress Bar along the top */}
+      {/* Main Rotating Showcase Stage on Deep Green with Lime Highlights */}
+      <div
+        onMouseEnter={() => setIsPaused(true)}
+        onMouseLeave={() => setIsPaused(false)}
+        className="relative rounded-[28px] bg-[#06302B] text-white p-6 sm:p-10 lg:p-12 shadow-2xl overflow-hidden border border-[#0A3D37]"
+      >
+        {/* Animated Lime Progress Bar along the top */}
         <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 overflow-hidden z-20">
           <div
-            className="h-full bg-gradient-to-r from-[#125EA2] via-sky-400 to-[#388E3C] transition-all duration-75"
+            className="h-full bg-[#B4F26B] transition-all duration-75"
             style={{ width: `${progress}%` }}
           />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-center relative z-10">
           
-          {/* Animated Director Portrait Stage (Smooth Crossfade & Zoom) */}
+          {/* Uniform 24px Rounded Photo Frame with Lime Outline & Smooth 800ms Transition */}
           <div className="md:col-span-5 flex justify-center">
             <div className="relative group/photo">
               
-              {/* Outer decorative ambient glow */}
-              <div className="absolute -inset-2 rounded-3xl bg-gradient-to-tr from-[#125EA2] via-[#388E3C] to-[#FFA726] opacity-35 blur-md" />
+              {/* Soft Lime Glow behind the Active Frame */}
+              <div className="absolute -inset-3 rounded-[28px] bg-[#B4F26B]/20 blur-xl opacity-75 pointer-events-none" />
 
-              {/* Layered Image Container: All 5 images stay mounted for fluid, instant crossfade */}
-              <div className="relative w-64 h-80 sm:w-72 sm:h-96 rounded-2xl overflow-hidden bg-slate-900 border-2 border-white/20 shadow-2xl">
+              {/* Uniform Frame Container: 24px Radius */}
+              <div className="relative w-64 h-80 sm:w-72 sm:h-96 aspect-[4/5] rounded-[24px] overflow-hidden bg-slate-900 border-2 border-[#B4F26B] shadow-2xl">
                 {directors.map((director, index) => {
                   const isActive = index === currentIndex;
                   return (
                     <div
                       key={director.id}
-                      className={`absolute inset-0 transition-all duration-500 ease-in-out ${
+                      className={`absolute inset-0 transition-all duration-800 ease-in-out ${
                         isActive
-                          ? 'opacity-100 scale-100 z-10 pointer-events-auto'
-                          : 'opacity-0 scale-105 z-0 pointer-events-none'
+                          ? 'opacity-100 scale-105 z-10 pointer-events-auto'
+                          : 'opacity-0 scale-100 z-0 pointer-events-none'
                       }`}
                     >
                       <img
@@ -154,37 +153,36 @@ export const DirectorsShowcase: React.FC = () => {
                         className="w-full h-full object-cover object-top"
                         loading="eager"
                       />
-                      {/* Gradient shadow for depth */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent pointer-events-none" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#06302B]/80 via-transparent to-transparent pointer-events-none" />
                     </div>
                   );
                 })}
 
                 {/* Official Verified Emblem Tag */}
-                <div className="absolute bottom-3 right-3 z-20 px-3 py-1 rounded-full bg-white/95 backdrop-blur-md text-slate-900 shadow-md flex items-center gap-1.5 text-[11px] font-bold">
-                  <Award className="w-3.5 h-3.5 text-[#125EA2]" />
+                <div className="absolute bottom-3 right-3 z-20 px-3 py-1 rounded-full bg-[#B4F26B] text-[#06302B] shadow-md flex items-center gap-1.5 text-[11px] font-bold">
+                  <Award className="w-3.5 h-3.5 text-[#06302B]" />
                   <span>NextGen Governance</span>
                 </div>
               </div>
+
             </div>
           </div>
 
-          {/* Director Information & Narrative (Smooth Text Crossfade) */}
+          {/* Director Information & Narrative */}
           <div className="md:col-span-7 relative min-h-[220px] flex flex-col justify-center text-left">
             {directors.map((director, index) => {
               const isActive = index === currentIndex;
               return (
                 <div
                   key={director.id}
-                  className={`transition-all duration-400 ease-in-out ${
+                  className={`transition-all duration-800 ease-in-out ${
                     isActive
                       ? 'opacity-100 translate-y-0 relative z-10'
                       : 'opacity-0 translate-y-3 absolute inset-0 pointer-events-none z-0'
-                  } space-y-4 sm:space-y-6`}
+                  } space-y-4`}
                 >
                   <div className="space-y-1.5">
-                    <div className="inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-sky-400">
-                      <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <div className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-[#B4F26B] font-mono">
                       <span>Executive Board of Directors</span>
                     </div>
 
@@ -192,9 +190,12 @@ export const DirectorsShowcase: React.FC = () => {
                       {director.name}
                     </h4>
 
-                    <p className="text-lg sm:text-xl font-semibold text-emerald-400">
-                      {director.role}
-                    </p>
+                    {/* Small Lime Pill for Designation */}
+                    <div className="pt-1">
+                      <span className="inline-block px-3 py-1 rounded-full bg-[#B4F26B]/20 text-[#B4F26B] text-xs font-bold tracking-wide border border-[#B4F26B]/30">
+                        {director.role}
+                      </span>
+                    </div>
                   </div>
 
                   <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal max-w-xl">
@@ -203,13 +204,13 @@ export const DirectorsShowcase: React.FC = () => {
 
                   {/* Governance Pillars Pill Row */}
                   <div className="pt-2 flex flex-wrap items-center gap-2 text-xs">
-                    <span className="px-3 py-1 rounded-lg bg-white/10 border border-white/15 text-slate-200">
+                    <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-slate-200">
                       Institutional Leadership
                     </span>
-                    <span className="px-3 py-1 rounded-lg bg-white/10 border border-white/15 text-slate-200">
+                    <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-slate-200">
                       Strategic Vision
                     </span>
-                    <span className="px-3 py-1 rounded-lg bg-white/10 border border-white/15 text-slate-200">
+                    <span className="px-3 py-1 rounded-full bg-white/10 border border-white/10 text-slate-200">
                       Community Representation
                     </span>
                   </div>

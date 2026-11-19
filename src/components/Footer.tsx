@@ -9,15 +9,15 @@ export const Footer: React.FC = () => {
   };
 
   return (
-    <footer className="bg-slate-900 text-slate-300 pt-16 pb-12 border-t border-slate-800">
+    <footer className="bg-[#06302B] text-slate-200 pt-16 pb-12 border-t border-white/[0.08] relative">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Main Footer Row */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-slate-800 items-start">
+        <div className="grid grid-cols-1 md:grid-cols-12 gap-10 pb-12 border-b border-white/[0.08] items-start">
           
           {/* Brand Column */}
           <div className="md:col-span-6 space-y-4">
-            <div className="bg-white/95 rounded-xl p-3 inline-block shadow-sm">
+            <div className="bg-white rounded-2xl p-3 inline-block shadow-md border border-white/20">
               <BrandLogo variant="lockup" size="md" />
             </div>
 
@@ -25,14 +25,14 @@ export const Footer: React.FC = () => {
               {SITE_CONFIG.brand.tagline}
             </p>
 
-            <p className="text-xs text-slate-400 max-w-md leading-relaxed font-normal">
+            <p className="text-xs text-slate-300 max-w-md leading-relaxed font-normal">
               {SITE_CONFIG.brand.shortBio}
             </p>
           </div>
 
           {/* Navigation Links Column */}
           <div className="md:col-span-3 space-y-3">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#B4F26B] font-mono">
               Corporate Navigation
             </h4>
             <ul className="space-y-2 text-sm">
@@ -40,7 +40,7 @@ export const Footer: React.FC = () => {
                 <li key={item.id}>
                   <a
                     href={item.href}
-                    className="text-slate-400 hover:text-white transition-colors"
+                    className="text-slate-300 hover:text-[#B4F26B] transition-colors text-xs sm:text-sm"
                   >
                     {item.label}
                   </a>
@@ -50,16 +50,16 @@ export const Footer: React.FC = () => {
           </div>
 
           {/* Quick Verified Contact & Back to Top */}
-          <div className="md:col-span-3 space-y-4">
-            <h4 className="text-xs font-bold uppercase tracking-widest text-slate-400">
+          <div className="md:col-span-3 space-y-3.5">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-[#B4F26B] font-mono">
               Inquiries
             </h4>
-            <p className="text-xs text-slate-400 leading-relaxed">
+            <p className="text-xs text-slate-300 leading-relaxed font-normal">
               For governance correspondence or collaborative inquiries:
             </p>
             <a
               href="#contact"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-sky-400 hover:text-sky-300 transition-colors"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#B4F26B] hover:text-white transition-colors"
             >
               <span>Access Official Contact Form</span>
               <span>&rarr;</span>
@@ -69,10 +69,10 @@ export const Footer: React.FC = () => {
               <button
                 type="button"
                 onClick={scrollToTop}
-                className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-300 hover:text-white transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-white/[0.08] hover:bg-[#B4F26B] hover:text-[#06302B] border border-white/10 text-xs font-semibold text-slate-200 transition-all duration-200 cursor-pointer shadow-sm group"
                 aria-label="Back to top"
               >
-                <ArrowUp className="w-3.5 h-3.5" />
+                <ArrowUp className="w-3.5 h-3.5 transition-transform duration-200 group-hover:-translate-y-0.5" />
                 <span>Return to Top</span>
               </button>
             </div>
@@ -81,7 +81,7 @@ export const Footer: React.FC = () => {
         </div>
 
         {/* Bottom Legal & Copyright */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-400">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-300/80">
           <div className="flex items-center gap-3">
             <span>{SITE_CONFIG.footer.copyright}</span>
           </div>

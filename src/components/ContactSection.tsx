@@ -16,9 +16,10 @@ import {
   GraduationCap,
   HeartHandshake,
   UsersRound,
-  FileText,
   BadgeCheck,
-  RotateCcw
+  RotateCcw,
+  Sparkles,
+  ArrowRight
 } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { isSupabaseConfigured, submitInquiryToSupabase } from '../lib/supabase';
@@ -127,34 +128,34 @@ export const ContactSection: React.FC = () => {
     const newErrors: FormErrors = {};
 
     if (!formData.name.trim()) {
-      newErrors.name = 'Please enter your full name or correspondent name.';
+      newErrors.name = 'Please enter your full name.';
     } else if (formData.name.trim().length < 2) {
       newErrors.name = 'Name must be at least 2 characters.';
     }
 
     if (!formData.email.trim()) {
-      newErrors.email = 'Please provide an official or personal email address.';
+      newErrors.email = 'Please provide an email address.';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email.trim())) {
-      newErrors.email = 'Please provide a valid email format (e.g. correspondent@domain.com).';
+      newErrors.email = 'Please provide a valid email format (e.g. name@domain.com).';
     }
 
     if (!formData.phone.trim()) {
-      newErrors.phone = 'Please provide a direct telephone or contact number.';
+      newErrors.phone = 'Please provide a contact phone number.';
     } else {
       const digits = formData.phone.replace(/\D/g, '');
       if (digits.length < 7 || formData.phone.trim().length > 25) {
-        newErrors.phone = 'Please provide a valid telephone number (at least 7 digits).';
+        newErrors.phone = 'Please provide a valid phone number (at least 7 digits).';
       }
     }
 
     if (!formData.subject.trim()) {
-      newErrors.subject = 'Please select a disciplinary classification or subject.';
+      newErrors.subject = 'Please select an inquiry subject.';
     }
 
     if (!formData.message.trim()) {
-      newErrors.message = 'Please provide the details or statement of your inquiry.';
+      newErrors.message = 'Please enter your message.';
     } else if (formData.message.trim().length < 15) {
-      newErrors.message = 'Please provide a more descriptive brief (minimum 15 characters).';
+      newErrors.message = 'Please provide a little more detail (at least 15 characters).';
     }
 
     setErrors(newErrors);
@@ -172,13 +173,12 @@ export const ContactSection: React.FC = () => {
     let inquiryId = generatedId;
     let savedToSupabase = false;
 
-    // Compose formatted message including optional organization affiliation
     const formattedMessage = formData.organization.trim()
       ? `[Institutional Affiliation / Organization: ${formData.organization.trim()}]\n\n${formData.message.trim()}`
       : formData.message.trim();
 
     try {
-      // 1. If Supabase is connected, store directly in Supabase cloud database
+      // 1. Supabase Cloud DB
       if (isSupabaseConfigured()) {
         try {
           const supabaseResult = await submitInquiryToSupabase({
@@ -200,7 +200,7 @@ export const ContactSection: React.FC = () => {
         }
       }
 
-      // 2. Also invoke backend API if available (for server logging & email forwarding)
+      // 2. Server API
       try {
         const response = await fetch('/api/contact', {
           method: 'POST',
@@ -235,7 +235,7 @@ export const ContactSection: React.FC = () => {
         }
       }
 
-      // 3. Fallback cache in localStorage for instant offline access on this device
+      // 3. Fallback Local Storage
       try {
         const submittedItem = {
           id: inquiryId,
@@ -279,52 +279,52 @@ export const ContactSection: React.FC = () => {
     } catch (err: any) {
       console.error('Official transmission failed:', err);
       setServerError(
-        err.message || 'Unable to connect to the institutional gateway. Please verify network connectivity or contact the secretariat directly.'
+        err.message || 'Unable to connect to the institutional gateway. Please verify your connection or contact NextGen directly.'
       );
       setStatus('idle');
     }
   };
 
   return (
-    <section id="contact" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative bg-white border-t border-slate-200/80">
+    <section id="contact" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative bg-[#F7F6EC] border-t border-slate-200/80">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="max-w-3xl space-y-4 mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-[#125EA2] bg-[#125EA2]/10 border border-[#125EA2]/20">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#125EA2]" />
+        <div className="max-w-3xl space-y-3.5 mb-16">
+          <div className="biztop-eyebrow">
+            <Sparkles className="w-3.5 h-3.5 text-[#06302B] shrink-0 fill-[#06302B]" />
             <span>Official Secretariat Gateway</span>
           </div>
-          <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+          <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B2B26]">
             {contact.heading}
           </h2>
-          <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+          <p className="text-base sm:text-lg text-[#5B6B66] leading-relaxed font-normal">
             {contact.subtext}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           
           {/* Left Column: Official Contact Channels */}
-          <div className="lg:col-span-5 space-y-6">
+          <div className="lg:col-span-5 space-y-5">
             
-            <div className="space-y-4">
-              <h3 className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-[#125EA2]" />
+            <div className="space-y-3.5">
+              <h3 className="text-xs font-bold uppercase tracking-widest text-[#5B6B66] flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#06302B]" />
                 <span>Verified Contact Secretariat</span>
               </h3>
 
               {contact.details.map((item) => (
                 <div
                   key={item.label}
-                  className="p-5 rounded-2xl bg-[#FAF9F6] border border-slate-200/90 space-y-2 hover:border-slate-300 transition-colors relative group"
+                  className="p-5 rounded-[20px] biztop-card space-y-2 relative group"
                 >
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-                      {item.label === 'Official Email' && <Mail className="w-4 h-4 text-[#125EA2]" />}
-                      {(item.label.includes('Phone') || item.label.includes('Contact')) && <Phone className="w-4 h-4 text-[#125EA2]" />}
-                      {item.label === 'Administrative Office' && <MapPin className="w-4 h-4 text-[#388E3C]" />}
-                      {item.label === 'Operating Hours' && <Clock className="w-4 h-4 text-[#FFA726]" />}
+                    <div className="flex items-center gap-2 text-xs font-bold text-[#06302B] uppercase tracking-wider font-mono">
+                      {item.label === 'Official Email' && <Mail className="w-4 h-4 text-[#06302B]" />}
+                      {(item.label.includes('Phone') || item.label.includes('Contact')) && <Phone className="w-4 h-4 text-[#06302B]" />}
+                      {item.label === 'Administrative Office' && <MapPin className="w-4 h-4 text-[#06302B]" />}
+                      {item.label === 'Operating Hours' && <Clock className="w-4 h-4 text-[#06302B]" />}
                       <span>{item.label}</span>
                     </div>
 
@@ -333,13 +333,13 @@ export const ContactSection: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleCopy(item.value, 'email')}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#125EA2] px-2 py-0.5 rounded-md hover:bg-white border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#06302B] hover:bg-[#B4F26B] px-2.5 py-1 rounded-full transition-colors cursor-pointer"
                         title="Copy official email"
                       >
                         {copiedType === 'email' ? (
                           <>
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            <span className="text-emerald-700 font-semibold">Copied!</span>
+                            <Check className="w-3 h-3 text-[#06302B]" />
+                            <span>Copied!</span>
                           </>
                         ) : (
                           <>
@@ -354,13 +354,13 @@ export const ContactSection: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleCopy(item.value, 'address')}
-                        className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-500 hover:text-[#388E3C] px-2 py-0.5 rounded-md hover:bg-white border border-transparent hover:border-slate-200 transition-colors cursor-pointer"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-[#06302B] hover:bg-[#B4F26B] px-2.5 py-1 rounded-full transition-colors cursor-pointer"
                         title="Copy office address"
                       >
                         {copiedType === 'address' ? (
                           <>
-                            <Check className="w-3 h-3 text-emerald-600" />
-                            <span className="text-emerald-700 font-semibold">Copied!</span>
+                            <Check className="w-3 h-3 text-[#06302B]" />
+                            <span>Copied!</span>
                           </>
                         ) : (
                           <>
@@ -375,25 +375,25 @@ export const ContactSection: React.FC = () => {
                   {item.label === 'Official Email' ? (
                     <a
                       href={`mailto:${item.value}`}
-                      className="block text-base font-semibold text-[#125EA2] hover:underline break-all"
+                      className="block text-sm sm:text-base font-bold text-[#06302B] hover:underline break-all"
                     >
                       {item.value}
                     </a>
                   ) : item.label.includes('Phone') ? (
                     <a
                       href={`tel:${item.value.replace(/\s+/g, '')}`}
-                      className="block text-base font-semibold text-[#125EA2] hover:underline break-all"
+                      className="block text-sm sm:text-base font-bold text-[#06302B] hover:underline break-all"
                     >
                       {item.value}
                     </a>
                   ) : (
-                    <p className="text-sm sm:text-base font-medium text-slate-800 whitespace-pre-line leading-relaxed">
+                    <p className="text-xs sm:text-sm font-medium text-[#5B6B66] whitespace-pre-line leading-relaxed">
                       {item.value}
                     </p>
                   )}
 
                   {item.isPlaceholder && (
-                    <p className="text-xs text-amber-700 bg-amber-50 rounded px-2 py-0.5 inline-block font-mono break-words max-w-full">
+                    <p className="text-xs text-amber-800 bg-amber-100 rounded-full px-3 py-0.5 inline-block font-mono break-words max-w-full">
                       {item.placeholderNote}
                     </p>
                   )}
@@ -402,18 +402,18 @@ export const ContactSection: React.FC = () => {
             </div>
 
             {/* Official Response Protocol */}
-            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100 flex items-start gap-3">
-              <Clock className="w-4 h-4 text-[#125EA2] shrink-0 mt-0.5" />
-              <div className="text-xs text-slate-600 leading-relaxed">
-                <span className="font-bold text-slate-900 block">Correspondence Response Protocol</span>
-                Official submissions are formally logged and routed through the NextGen Secretarial Desk. Responses and statutory acknowledgments are typically issued within 24 to 48 business hours.
+            <div className="p-5 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs flex items-start gap-3">
+              <Clock className="w-4 h-4 text-[#06302B] shrink-0 mt-0.5" />
+              <div className="text-xs text-[#5B6B66] leading-relaxed font-normal">
+                <span className="font-bold text-[#0B2B26] block font-sans">Correspondence Response Protocol</span>
+                Official submissions are formally logged and reviewed by the NextGen Secretarial Desk. Responses and acknowledgments are typically issued within 24 to 48 business hours.
               </div>
             </div>
 
             {/* Verification and Privacy Notice */}
-            <div className="p-6 rounded-2xl bg-slate-50 border border-slate-200 text-xs text-slate-600 space-y-2">
-              <div className="flex items-center gap-2 font-semibold text-slate-800">
-                <ShieldCheck className="w-4 h-4 text-[#125EA2]" />
+            <div className="p-5 rounded-[20px] bg-white border border-slate-200/90 shadow-2xs text-xs text-[#5B6B66] space-y-1.5">
+              <div className="flex items-center gap-1.5 font-bold text-[#0B2B26]">
+                <ShieldCheck className="w-4 h-4 text-[#06302B]" />
                 <span>Verification & Security Standard</span>
               </div>
               <p className="leading-relaxed font-normal">
@@ -423,84 +423,78 @@ export const ContactSection: React.FC = () => {
 
           </div>
 
-          {/* Right Column: Super Official Enquiry Form */}
+          {/* Right Column: Biztop 24px Rounded Card Enquiry Form */}
           <div className="lg:col-span-7">
-            <div className="rounded-3xl bg-[#FAF9F6] border border-slate-200/90 shadow-md relative overflow-hidden">
+            <div className="bg-white rounded-[24px] p-8 sm:p-10 shadow-lg border border-slate-200/90 relative overflow-hidden">
               
-              {/* Official Institutional Document Header Strip */}
-              <div className="bg-slate-900 text-white px-6 sm:px-8 py-4 border-b border-slate-800 flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2.5">
-                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse shrink-0" />
-                  <div className="space-y-0.5">
-                    <span className="text-[11px] font-mono uppercase tracking-wider text-slate-300 font-bold block">
-                      FORM NXG-SEC/2026-ENQ
-                    </span>
-                    <span className="text-xs text-slate-400 font-medium block">
-                      NextGen Executive Secretariat Intake Protocol
-                    </span>
-                  </div>
+              {/* Header Bar */}
+              <div className="mb-6 pb-4 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
+                <div className="flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-[#B4F26B]" />
+                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#06302B]">
+                    FORM NXG-SEC/2026-ENQ
+                  </span>
+                  <span className="text-slate-400 hidden sm:inline">&bull;</span>
+                  <span className="text-xs text-[#5B6B66] hidden sm:inline">Secretariat Intake</span>
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-[11px] font-semibold text-slate-200 backdrop-blur-sm">
-                  <Lock className="w-3 h-3 text-emerald-400" />
+                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#06302B] bg-[#B4F26B]/30 px-3 py-1 rounded-full border border-[#B4F26B]">
+                  <Lock className="w-3 h-3 text-[#06302B]" />
                   <span>256-Bit Encrypted Protocol</span>
                 </div>
               </div>
 
               {/* Form Content / Success State */}
-              <div className="p-6 sm:p-8 lg:p-10">
+              <div>
                 {status === 'success' && inquiryReceipt ? (
-                  <div className="space-y-6">
-                    {/* Official Receipt Header */}
-                    <div className="p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-md space-y-5 text-left relative overflow-hidden">
-                      {/* Top Accent Strip */}
-                      <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#125EA2] via-emerald-500 to-[#388E3C]" />
-
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+                  <div className="space-y-6 animate-fadeIn">
+                    {/* Friendly Soft Lime/Green Receipt Card */}
+                    <div className="p-7 rounded-[20px] bg-[#F7F6EC] border border-[#B4F26B] space-y-5 text-left relative overflow-hidden shadow-sm">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-slate-200/80">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 shadow-xs">
-                            <BadgeCheck className="w-6 h-6 text-emerald-600" />
+                          <div className="w-10 h-10 rounded-full bg-[#B4F26B] text-[#06302B] flex items-center justify-center shrink-0">
+                            <BadgeCheck className="w-6 h-6 stroke-[2.5]" />
                           </div>
                           <div>
-                            <span className="text-xs font-mono font-bold uppercase tracking-wider text-slate-400">
+                            <span className="text-[11px] font-mono font-bold uppercase tracking-wider text-[#06302B]">
                               Official Filing Acknowledgment
                             </span>
-                            <h4 className="text-lg font-bold text-slate-900">
+                            <h4 className="text-lg font-extrabold text-[#0B2B26]">
                               Enquiry Logged with Secretarial Registry
                             </h4>
                           </div>
                         </div>
 
                         <div className="text-left sm:text-right">
-                          <span className="text-[11px] font-mono text-slate-400 block">Transmission Timestamp</span>
-                          <span className="text-xs font-semibold text-slate-700">{inquiryReceipt.timestamp}</span>
+                          <span className="text-[10px] font-mono text-[#5B6B66] block uppercase">Timestamp</span>
+                          <span className="text-xs font-bold text-[#06302B]">{inquiryReceipt.timestamp}</span>
                         </div>
                       </div>
 
-                      {/* Official Filing Details Table */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-                          <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
+                      {/* Filing Reference Details */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
                             Filing Reference Code
                           </span>
                           <div className="flex items-center justify-between gap-2">
-                            <span className="font-mono text-sm font-extrabold text-[#125EA2]">
+                            <span className="font-mono text-xs font-black text-[#06302B]">
                               {inquiryReceipt.inquiryId}
                             </span>
                             <button
                               type="button"
                               onClick={() => handleCopy(inquiryReceipt.inquiryId, 'receipt')}
-                              className="text-[11px] font-semibold text-slate-600 hover:text-[#125EA2] flex items-center gap-1 cursor-pointer"
+                              className="text-[11px] font-bold text-[#06302B] hover:underline flex items-center gap-1 cursor-pointer"
                               title="Copy Filing Reference"
                             >
                               {copiedType === 'receipt' ? (
                                 <>
-                                  <Check className="w-3.5 h-3.5 text-emerald-600" />
-                                  <span className="text-emerald-700">Copied</span>
+                                  <Check className="w-3 h-3 text-emerald-600" />
+                                  <span>Copied</span>
                                 </>
                               ) : (
                                 <>
-                                  <Copy className="w-3.5 h-3.5" />
+                                  <Copy className="w-3 h-3" />
                                   <span>Copy</span>
                                 </>
                               )}
@@ -508,52 +502,51 @@ export const ContactSection: React.FC = () => {
                           </div>
                         </div>
 
-                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-                          <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
-                            Routing & Queue Status
+                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
+                            Routing Status
                           </span>
-                          <div className="font-semibold text-slate-800">
-                            Executive Secretarial Desk &bull; Priority Intake
+                          <div className="font-bold text-[#0B2B26]">
+                            Secretarial Review Desk
                           </div>
                         </div>
 
-                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-                          <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
-                            Correspondent Name
+                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
+                            Correspondent
                           </span>
-                          <div className="font-semibold text-slate-800 truncate">
+                          <div className="font-bold text-[#0B2B26] truncate">
                             {inquiryReceipt.name}
                             {inquiryReceipt.organization && (
-                              <span className="text-slate-500 font-normal"> ({inquiryReceipt.organization})</span>
+                              <span className="text-[#5B6B66] font-normal"> ({inquiryReceipt.organization})</span>
                             )}
                           </div>
                         </div>
 
-                        <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 space-y-1">
-                          <span className="text-[11px] uppercase tracking-wider font-bold text-slate-400">
-                            Disciplinary Classification
+                        <div className="p-3.5 rounded-[14px] bg-white border border-slate-200/80 space-y-1">
+                          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B66] font-mono">
+                            Classification
                           </span>
-                          <div className="font-semibold text-slate-800 truncate">
+                          <div className="font-bold text-[#0B2B26] truncate">
                             {inquiryReceipt.subject}
                           </div>
                         </div>
                       </div>
 
-                      {/* Official NextGen Seal Notice */}
-                      <div className="p-3.5 rounded-xl bg-emerald-50/80 border border-emerald-100 text-xs text-emerald-950 space-y-1">
-                        <span className="font-bold flex items-center gap-1.5 text-emerald-900">
-                          <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                      <div className="p-3.5 rounded-[14px] bg-[#B4F26B]/25 border border-[#B4F26B] text-xs text-[#06302B] space-y-1">
+                        <span className="font-bold flex items-center gap-1.5 text-[#06302B]">
+                          <ShieldCheck className="w-4 h-4 text-[#06302B]" />
                           <span>Secretarial Acknowledgment Guarantee</span>
                         </span>
-                        <p className="text-[11px] text-emerald-800 leading-relaxed">
-                          Your submission has been formally recorded in the NextGen registry. A designated secretarial officer will review the brief and contact you at <span className="font-semibold underline">{inquiryReceipt.email}</span> within 24–48 business hours.
+                        <p className="text-[11px] leading-relaxed font-normal">
+                          Your submission has been formally recorded. A designated secretarial officer will review the brief and contact you at <span className="font-bold underline">{inquiryReceipt.email}</span> within 24–48 business hours.
                         </p>
                       </div>
                     </div>
 
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-                      <p className="text-xs text-slate-500 italic">
-                        Please save or copy your filing reference code for tracking purposes.
+                      <p className="text-xs text-[#5B6B66] italic">
+                        Please save or copy your filing reference code for future correspondence.
                       </p>
                       <button
                         type="button"
@@ -561,7 +554,7 @@ export const ContactSection: React.FC = () => {
                           setStatus('idle');
                           setInquiryReceipt(null);
                         }}
-                        className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-full text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-300 shadow-xs transition-colors cursor-pointer"
+                        className="btn-biztop-pill text-xs shadow-xs"
                       >
                         <RotateCcw className="w-3.5 h-3.5" />
                         <span>File Another Official Enquiry</span>
@@ -569,8 +562,8 @@ export const ContactSection: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} noValidate className="space-y-6">
-                    {/* Anti-spam honeypot (hidden from human visitors) */}
+                  <form onSubmit={handleSubmit} noValidate className="space-y-5">
+                    {/* Anti-spam honeypot */}
                     <div className="hidden" aria-hidden="true">
                       <input
                         type="text"
@@ -582,290 +575,233 @@ export const ContactSection: React.FC = () => {
                       />
                     </div>
 
-                    {/* Server error alert banner */}
+                    {/* Friendly Soft Red Alert Banner */}
                     {serverError && (
-                      <div className="p-4 rounded-xl bg-red-50 border border-red-200 text-sm text-red-800 flex items-start gap-3">
-                        <AlertCircle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                        <div className="space-y-1">
-                          <p className="font-semibold text-red-950">Transmission Blocked</p>
-                          <p className="text-xs text-red-700 leading-relaxed">{serverError}</p>
+                      <div className="p-4 rounded-[14px] bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2.5 shadow-xs">
+                        <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
+                        <div className="space-y-0.5">
+                          <p className="font-bold text-rose-950">Transmission Issue</p>
+                          <p className="text-rose-700 leading-relaxed">{serverError}</p>
                         </div>
                       </div>
                     )}
                     
-                    {/* Section 01: Correspondent Credentials */}
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80">
-                        <span className="w-5 h-5 rounded-full bg-[#125EA2]/10 text-[#125EA2] text-[11px] font-mono font-bold flex items-center justify-center">
-                          01
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                          Correspondent Credentials & Identification
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        {/* Full Name */}
-                        <div>
-                          <label htmlFor="contact-name" className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Full Name / Primary Correspondent <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            id="contact-name"
-                            type="text"
-                            value={formData.name}
-                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                            placeholder="e.g. Dr. Ayesha Rahman"
-                            className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
-                              errors.name
-                                ? 'border-red-400 focus:ring-red-200'
-                                : 'border-slate-300 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
-                            }`}
-                            aria-invalid={!!errors.name}
-                            aria-describedby={errors.name ? 'name-error' : undefined}
-                          />
-                          {errors.name && (
-                            <p id="name-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                              <span>{errors.name}</span>
-                            </p>
-                          )}
-                        </div>
-
-                        {/* Organization / Affiliation (Optional) */}
-                        <div>
-                          <div className="flex items-center justify-between mb-1.5">
-                            <label htmlFor="contact-org" className="block text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                              Organization / Institution
-                            </label>
-                            <span className="text-[10px] uppercase tracking-wider text-slate-400 font-medium">Optional</span>
-                          </div>
-                          <input
-                            id="contact-org"
-                            type="text"
-                            value={formData.organization}
-                            onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                            placeholder="e.g. Apex Welfare Trust / Civic Body"
-                            className="w-full px-4 py-3 rounded-xl bg-white border border-slate-300 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#125EA2]/20 focus:border-[#125EA2] transition-all"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Email and Phone Row */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <div>
-                          <label htmlFor="contact-email" className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Official Email Address <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            id="contact-email"
-                            type="email"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                            placeholder="e.g. correspondent@domain.org"
-                            className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
-                              errors.email
-                                ? 'border-red-400 focus:ring-red-200'
-                                : 'border-slate-300 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
-                            }`}
-                            aria-invalid={!!errors.email}
-                            aria-describedby={errors.email ? 'email-error' : undefined}
-                          />
-                          {errors.email && (
-                            <p id="email-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                              <span>{errors.email}</span>
-                            </p>
-                          )}
-                        </div>
-
-                        <div>
-                          <label htmlFor="contact-phone" className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                            Direct Telephone / Contact <span className="text-red-500">*</span>
-                          </label>
-                          <input
-                            id="contact-phone"
-                            type="tel"
-                            value={formData.phone}
-                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                            placeholder="e.g. +91 98765 43210"
-                            className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all ${
-                              errors.phone
-                                ? 'border-red-400 focus:ring-red-200'
-                                : 'border-slate-300 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
-                            }`}
-                            aria-invalid={!!errors.phone}
-                            aria-describedby={errors.phone ? 'phone-error' : undefined}
-                          />
-                          {errors.phone && (
-                            <p id="phone-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
-                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                              <span>{errors.phone}</span>
-                            </p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Section 02: Classification & Subject Matter */}
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80">
-                        <span className="w-5 h-5 rounded-full bg-[#125EA2]/10 text-[#125EA2] text-[11px] font-mono font-bold flex items-center justify-center">
-                          02
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                          Disciplinary Classification & Subject Matter
-                        </span>
-                      </div>
-
-                      {/* Quick Subject Chips with Professional Icons (No Emojis) */}
-                      <div className="space-y-1.5">
-                        <span className="text-[11px] text-slate-500 font-medium block">
-                          Select applicable disciplinary domain:
-                        </span>
-                        <div className="flex flex-wrap gap-2">
-                          {QUICK_SUBJECTS.map((chip) => {
-                            const isSelected = formData.subject === chip.value;
-                            const ChipIcon = chip.icon;
-                            return (
-                              <button
-                                key={chip.value}
-                                type="button"
-                                onClick={() => {
-                                  setFormData((prev) => ({ ...prev, subject: chip.value }));
-                                  setErrors((prev) => ({ ...prev, subject: undefined }));
-                                }}
-                                className={`inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all duration-200 cursor-pointer active:scale-95 ${
-                                  isSelected
-                                    ? 'bg-[#125EA2] text-white shadow-sm ring-2 ring-[#125EA2]/30'
-                                    : 'bg-white hover:bg-slate-100/90 text-slate-700 border border-slate-300 hover:border-slate-400'
-                                }`}
-                              >
-                                <ChipIcon className={`w-3.5 h-3.5 ${isSelected ? 'text-white' : 'text-[#125EA2]'}`} />
-                                <span>{chip.label}</span>
-                                {isSelected && <Check className="w-3.5 h-3.5 text-white ml-0.5" />}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <div className="pt-1">
-                        <label htmlFor="contact-subject" className="block text-[11px] font-bold uppercase tracking-wider text-slate-700 mb-1.5">
-                          Enquiry Category Dropdown <span className="text-red-500">*</span>
+                    {/* Name & Organization */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="contact-name" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
+                          Full Name <span className="text-red-500">*</span>
                         </label>
-                        <select
-                          id="contact-subject"
-                          value={formData.subject}
-                          onChange={(e) => {
-                            setFormData({ ...formData, subject: e.target.value });
-                            setErrors({ ...errors, subject: undefined });
-                          }}
-                          className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 focus:outline-none focus:ring-2 transition-all ${
-                            errors.subject
-                              ? 'border-red-400 focus:ring-red-200'
-                              : 'border-slate-300 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
+                        <input
+                          id="contact-name"
+                          type="text"
+                          value={formData.name}
+                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                          placeholder="e.g. Ayesha Rahman"
+                          className={`biztop-input w-full ${
+                            errors.name ? 'border-rose-400 bg-rose-50/50' : ''
                           }`}
-                          aria-invalid={!!errors.subject}
-                          aria-describedby={errors.subject ? 'subject-error' : undefined}
-                        >
-                          <option value="">-- Select Official Classification --</option>
-                          <option value="General Corporate Inquiry">General Corporate / Institutional Inquiry</option>
-                          <option value="Software Services">Software Services & Platform Support</option>
-                          <option value="Education & Digital Skills">Education & Digital Skills Empowerment</option>
-                          <option value="Social Services & Public Assistance">Social Services & Public Assistance Programs</option>
-                          <option value="Community Development Collaboration">Community Development & Civic Collaboration</option>
-                          <option value="Institutional Partnership">Institutional & Statutory Partnership</option>
-                        </select>
-                        {errors.subject && (
-                          <p id="subject-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                          aria-invalid={!!errors.name}
+                          aria-describedby={errors.name ? 'name-error' : undefined}
+                        />
+                        {errors.name && (
+                          <p id="name-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>{errors.subject}</span>
+                            <span>{errors.name}</span>
                           </p>
                         )}
-                      </div>
-                    </div>
-
-                    {/* Section 03: Formal Statement */}
-                    <div className="space-y-3 pt-2">
-                      <div className="flex items-center gap-2 pb-2 border-b border-slate-200/80">
-                        <span className="w-5 h-5 rounded-full bg-[#125EA2]/10 text-[#125EA2] text-[11px] font-mono font-bold flex items-center justify-center">
-                          03
-                        </span>
-                        <span className="text-xs font-bold uppercase tracking-wider text-slate-800">
-                          Formal Enquiry Statement & Narrative Brief
-                        </span>
                       </div>
 
                       <div>
-                        <div className="flex items-center justify-between mb-1.5">
-                          <label htmlFor="contact-message" className="block text-[11px] font-bold uppercase tracking-wider text-slate-700">
-                            Enquiry Details / Brief <span className="text-red-500">*</span>
+                        <div className="flex items-center justify-between mb-2">
+                          <label htmlFor="contact-org" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
+                            Organization
                           </label>
-                          <span className={`text-[11px] font-mono ${formData.message.length >= 15 ? 'text-slate-400' : 'text-amber-600 font-semibold'}`}>
-                            {formData.message.length}/5000 {formData.message.length < 15 && '(min 15 chars required)'}
-                          </span>
+                          <span className="text-[10px] uppercase text-[#5B6B66] font-mono">Optional</span>
                         </div>
-                        <textarea
-                          id="contact-message"
-                          rows={4}
-                          value={formData.message}
-                          onChange={(e) => {
-                            setFormData({ ...formData, message: e.target.value });
-                            if (e.target.value.trim().length >= 15) {
-                              setErrors({ ...errors, message: undefined });
-                            }
-                          }}
-                          placeholder="State the official purpose, scope, or operational assistance required from NextGen..."
-                          className={`w-full px-4 py-3 rounded-xl bg-white border text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all resize-y ${
-                            errors.message
-                              ? 'border-red-400 focus:ring-red-200'
-                              : 'border-slate-300 focus:ring-[#125EA2]/20 focus:border-[#125EA2]'
-                          }`}
-                          aria-invalid={!!errors.message}
-                          aria-describedby={errors.message ? 'message-error' : undefined}
+                        <input
+                          id="contact-org"
+                          type="text"
+                          value={formData.organization}
+                          onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                          placeholder="e.g. Civic Trust / Institution"
+                          className="biztop-input w-full"
                         />
-                        {errors.message && (
-                          <p id="message-error" className="text-xs text-red-600 mt-1 flex items-center gap-1">
+                      </div>
+                    </div>
+
+                    {/* Email and Phone Row */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label htmlFor="contact-email" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
+                          Email Address <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="contact-email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                          placeholder="e.g. name@domain.com"
+                          className={`biztop-input w-full ${
+                            errors.email ? 'border-rose-400 bg-rose-50/50' : ''
+                          }`}
+                          aria-invalid={!!errors.email}
+                          aria-describedby={errors.email ? 'email-error' : undefined}
+                        />
+                        {errors.email && (
+                          <p id="email-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>{errors.message}</span>
+                            <span>{errors.email}</span>
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="contact-phone" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
+                          Contact Phone <span className="text-red-500">*</span>
+                        </label>
+                        <input
+                          id="contact-phone"
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="e.g. +91 98765 43210"
+                          className={`biztop-input w-full ${
+                            errors.phone ? 'border-rose-400 bg-rose-50/50' : ''
+                          }`}
+                          aria-invalid={!!errors.phone}
+                          aria-describedby={errors.phone ? 'phone-error' : undefined}
+                        />
+                        {errors.phone && (
+                          <p id="phone-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                            <span>{errors.phone}</span>
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {/* Official Declaration Banner */}
-                    <div className="p-3.5 rounded-xl bg-slate-100/80 border border-slate-200/90 flex items-start gap-2.5 text-xs text-slate-600">
-                      <ShieldCheck className="w-4 h-4 text-[#125EA2] shrink-0 mt-0.5" />
-                      <p className="leading-relaxed">
-                        By transmitting this communication, you confirm that the provided information is submitted for official NextGen secretarial review. All records are archived under our institutional privacy code.
-                      </p>
+                    {/* Quick Subject Chips with Pill Radii & Professional Icons */}
+                    <div className="space-y-2">
+                      <label htmlFor="contact-subject" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
+                        Subject / Focus Discipline <span className="text-red-500">*</span>
+                      </label>
+
+                      <div className="flex flex-wrap gap-1.5 pt-0.5">
+                        {QUICK_SUBJECTS.map((chip) => {
+                          const isSelected = formData.subject === chip.value;
+                          const ChipIcon = chip.icon;
+                          return (
+                            <button
+                              key={chip.value}
+                              type="button"
+                              onClick={() => {
+                                setFormData((prev) => ({ ...prev, subject: chip.value }));
+                                setErrors((prev) => ({ ...prev, subject: undefined }));
+                              }}
+                              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer ${
+                                isSelected
+                                  ? 'bg-[#B4F26B] text-[#06302B] shadow-xs'
+                                  : 'bg-[#F7F6EC] hover:bg-slate-200/60 text-[#0B2B26] border border-slate-200'
+                              }`}
+                            >
+                              <ChipIcon className="w-3.5 h-3.5 text-[#06302B]" />
+                              <span>{chip.label}</span>
+                              {isSelected && <Check className="w-3 h-3 text-[#06302B] ml-0.5 stroke-[3]" />}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      <select
+                        id="contact-subject"
+                        value={formData.subject}
+                        onChange={(e) => {
+                          setFormData({ ...formData, subject: e.target.value });
+                          setErrors({ ...errors, subject: undefined });
+                        }}
+                        className={`biztop-input w-full ${
+                          errors.subject ? 'border-rose-400' : ''
+                        }`}
+                        aria-invalid={!!errors.subject}
+                        aria-describedby={errors.subject ? 'subject-error' : undefined}
+                      >
+                        <option value="">Select an inquiry category</option>
+                        <option value="General Corporate Inquiry">General Corporate Inquiry</option>
+                        <option value="Software Services">Software Services</option>
+                        <option value="Education & Digital Skills">Education & Digital Skills</option>
+                        <option value="Social Services & Public Assistance">Social Services & Public Assistance</option>
+                        <option value="Community Development Collaboration">Community Development Collaboration</option>
+                        <option value="Institutional Partnership">Institutional Partnership</option>
+                      </select>
+                      {errors.subject && (
+                        <p id="subject-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{errors.subject}</span>
+                        </p>
+                      )}
                     </div>
 
-                    {/* Submit Button */}
+                    {/* Message Field with Live Character Counter */}
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label htmlFor="contact-message" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
+                          Inquiry Message <span className="text-red-500">*</span>
+                        </label>
+                        <span className={`text-[11px] font-mono ${formData.message.length >= 15 ? 'text-[#5B6B66]' : 'text-amber-700 font-bold'}`}>
+                          {formData.message.length}/5000 {formData.message.length < 15 && '(min 15 chars)'}
+                        </span>
+                      </div>
+                      <textarea
+                        id="contact-message"
+                        rows={4}
+                        value={formData.message}
+                        onChange={(e) => {
+                          setFormData({ ...formData, message: e.target.value });
+                          if (e.target.value.trim().length >= 15) {
+                            setErrors({ ...errors, message: undefined });
+                          }
+                        }}
+                        placeholder="Please share details regarding your organization, proposal, or inquiry..."
+                        className={`w-full p-3.5 rounded-[14px] bg-[#F7F6EC] border text-sm text-[#0B2B26] placeholder:text-[#5B6B66] focus:outline-none focus:border-[#B4F26B] focus:ring-3 focus:ring-[#B4F26B]/50 focus:bg-white transition-all resize-y ${
+                          errors.message ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300/80'
+                        }`}
+                        aria-invalid={!!errors.message}
+                        aria-describedby={errors.message ? 'message-error' : undefined}
+                      />
+                      {errors.message && (
+                        <p id="message-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                          <span>{errors.message}</span>
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Submit Button: Biztop Pill with Circular Arrow Chip */}
                     <div>
                       <button
                         type="submit"
                         disabled={status === 'submitting'}
-                        className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-4 rounded-xl text-sm font-bold text-white bg-gradient-to-r from-[#125EA2] to-[#0E4F8B] hover:from-[#0E4F8B] hover:to-[#0A3D6E] shadow-md hover:shadow-lg hover:shadow-[#125EA2]/20 transition-all disabled:opacity-60 cursor-pointer active:scale-[0.99]"
+                        className="btn-biztop-pill w-full h-[52px] text-base font-bold shadow-md disabled:opacity-60"
                       >
                         {status === 'submitting' ? (
                           <>
-                            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                            <span className="w-4 h-4 border-2 border-[#06302B]/40 border-t-[#06302B] rounded-full animate-spin" />
                             <span>Submitting...</span>
                           </>
                         ) : (
                           <>
-                            <Send className="w-4 h-4" />
                             <span>Submit</span>
+                            <span className="arrow-chip">
+                              <ArrowRight className="w-4 h-4 stroke-[2.5]" />
+                            </span>
                           </>
                         )}
                       </button>
                     </div>
 
-                    {/* Secretariat protocol footnote */}
-                    <p className="text-[11px] text-slate-400 text-center pt-1 font-mono">
-                      NextGen Executive Secretariat &bull; Institutional Registry Portal
+                    <p className="text-[11px] text-[#5B6B66] text-center pt-1 font-mono">
+                      Submissions are handled securely by NextGen governance.
                     </p>
 
                   </form>

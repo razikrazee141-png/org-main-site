@@ -50,31 +50,31 @@ export const FocusAreas: React.FC = () => {
   };
 
   return (
-    <section id="focus-areas" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative bg-[#FAF9F6] border-b border-slate-200/70">
+    <section id="focus-areas" className="py-24 sm:py-32 px-4 sm:px-6 lg:px-8 relative bg-white border-b border-slate-200/80">
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
           <div className="max-w-2xl space-y-3">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full text-xs font-semibold uppercase tracking-wider text-[#125EA2] bg-[#125EA2]/10 border border-[#125EA2]/20">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#125EA2]" />
+            <div className="biztop-eyebrow">
+              <Sparkles className="w-3.5 h-3.5 text-[#06302B] shrink-0 fill-[#06302B]" />
               <span>Organisational Scope & Engagement</span>
             </div>
-            <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-slate-900">
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold tracking-tight text-[#0B2B26]">
               Areas of Focus & Engagement
             </h2>
-            <p className="text-base sm:text-lg text-slate-600 font-normal leading-relaxed">
+            <p className="text-base sm:text-lg text-[#5B6B66] font-normal leading-relaxed">
               NextGen operates across five interconnected disciplines to deliver balanced, meaningful, and long-term societal progress.
             </p>
           </div>
 
-          <div className="text-xs text-slate-500 font-mono hidden md:flex items-center gap-2 bg-white px-3.5 py-1.5 rounded-full border border-slate-200 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="text-xs font-bold text-[#06302B] font-mono hidden md:flex items-center gap-2 bg-[#F7F6EC] px-4 py-2 rounded-full border border-slate-200">
+            <span className="w-2 h-2 rounded-full bg-[#B4F26B]" />
             <span>05 Active Disciplinary Domains</span>
           </div>
         </div>
 
-        {/* Desktop & Tablet: Interactive Split Editorial Layout */}
+        {/* Desktop & Tablet: Interactive Split Layout with Rounded Biztop Cards */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Column: List of 5 Areas */}
@@ -87,48 +87,37 @@ export const FocusAreas: React.FC = () => {
                   key={area.id}
                   type="button"
                   onClick={() => handleSelectArea(area.id)}
-                  className={`w-full text-left p-4 sm:p-5 rounded-2xl transition-all duration-300 relative flex items-center justify-between gap-3 border min-w-0 cursor-pointer ${
+                  className={`w-full text-left p-4 sm:p-5 rounded-[20px] transition-all duration-200 relative flex items-center justify-between gap-3 border min-w-0 cursor-pointer ${
                     isActive
-                      ? 'bg-white shadow-lg border-slate-200/90 scale-[1.01]'
-                      : 'bg-white/60 hover:bg-white hover:border-slate-200/80 border-transparent text-slate-700'
+                      ? 'bg-[#06302B] text-white shadow-lg border-[#06302B] scale-[1.01]'
+                      : 'bg-[#F7F6EC] hover:bg-slate-100 hover:border-slate-300 border-transparent text-[#0B2B26]'
                   }`}
                   aria-pressed={isActive}
                 >
-                  {/* Left accent strip when active */}
-                  {isActive && (
-                    <div
-                      className="absolute left-0 top-3 bottom-3 w-1.5 rounded-r-full"
-                      style={{ backgroundColor: area.accentHex }}
-                    />
-                  )}
-
                   <div className="flex items-center gap-3 sm:gap-4 min-w-0 flex-1 pl-1">
                     <span
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${
+                      className={`w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 font-mono transition-colors ${
                         isActive
-                          ? 'text-white shadow-xs'
-                          : 'bg-slate-100 text-slate-500'
+                          ? 'bg-[#B4F26B] text-[#06302B]'
+                          : 'bg-white text-[#5B6B66]'
                       }`}
-                      style={{
-                        backgroundColor: isActive ? area.accentHex : undefined,
-                      }}
                     >
                       {area.number}
                     </span>
 
                     <div className="min-w-0 flex-1">
-                      <h3 className={`text-sm sm:text-base font-bold transition-colors truncate ${isActive ? 'text-slate-900' : 'text-slate-700'}`}>
+                      <h3 className={`text-sm sm:text-base font-bold transition-colors truncate ${isActive ? 'text-white' : 'text-[#0B2B26]'}`}>
                         {area.title}
                       </h3>
-                      <p className="text-xs text-slate-400 mt-0.5 truncate">
+                      <p className={`text-xs mt-0.5 truncate ${isActive ? 'text-slate-300' : 'text-[#5B6B66]'}`}>
                         {area.deliverablesSummary}
                       </p>
                     </div>
                   </div>
 
                   <ChevronRight
-                    className={`w-5 h-5 shrink-0 transition-transform ${
-                      isActive ? 'text-slate-800 translate-x-1' : 'text-slate-300'
+                    className={`w-4 h-4 shrink-0 transition-transform ${
+                      isActive ? 'text-[#B4F26B] translate-x-1' : 'text-slate-400'
                     }`}
                   />
                 </button>
@@ -140,30 +129,28 @@ export const FocusAreas: React.FC = () => {
           <div className="lg:col-span-7" id="focus-area-detail">
             <div
               key={activeArea.id}
-              className="rounded-3xl bg-white border border-slate-200/90 p-8 sm:p-12 shadow-xl relative overflow-hidden transition-all duration-300 min-h-[500px] flex flex-col justify-between animate-fadeIn"
+              className="rounded-[28px] bg-[#F7F6EC] p-8 sm:p-12 shadow-sm border border-slate-200/90 relative overflow-hidden transition-all duration-200 min-h-[480px] flex flex-col justify-between animate-fadeIn"
             >
-              {/* Top Accent Gradient Line */}
+              {/* Top Accent Line */}
               <div
-                className="absolute top-0 left-0 right-0 h-2 transition-all duration-500"
-                style={{ backgroundColor: activeArea.accentHex }}
+                className="absolute top-0 left-0 right-0 h-1.5 bg-[#B4F26B]"
               />
 
-              <div className="space-y-8">
+              <div className="space-y-6">
                 
                 {/* Meta details */}
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-200/80">
                   <div className="flex items-center gap-3">
                     <span
-                      className="p-3 rounded-2xl text-white shadow-sm"
-                      style={{ backgroundColor: activeArea.accentHex }}
+                      className="w-12 h-12 rounded-full bg-[#06302B] text-[#B4F26B] flex items-center justify-center shadow-xs"
                     >
-                      <IconComponent className="w-6 h-6" />
+                      <IconComponent className="w-6 h-6 stroke-[2.5]" />
                     </span>
                     <div>
-                      <span className="text-xs font-mono font-bold uppercase tracking-widest text-slate-400">
+                      <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#06302B]">
                         Focus Domain {activeArea.number}
                       </span>
-                      <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
+                      <h3 className="text-2xl sm:text-3xl font-extrabold text-[#0B2B26]">
                         {activeArea.title}
                       </h3>
                     </div>
@@ -171,26 +158,23 @@ export const FocusAreas: React.FC = () => {
                 </div>
 
                 {/* Summary narrative */}
-                <p className="text-base sm:text-lg text-slate-600 leading-relaxed font-normal">
+                <p className="text-base sm:text-lg text-[#5B6B66] leading-relaxed font-normal">
                   {activeArea.summary}
                 </p>
 
                 {/* Core Key Scope Bullets */}
-                <div className="space-y-4 pt-4 border-t border-slate-100">
-                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#125EA2]" />
+                <div className="space-y-3.5 pt-2">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-[#06302B] flex items-center gap-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#06302B]" />
                     <span>Key Dimensions & Initiatives</span>
                   </h4>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {activeArea.scope.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 hover:bg-slate-100/80 border border-slate-100 text-sm text-slate-700 transition-colors"
+                        className="flex items-start gap-3 p-3.5 rounded-[16px] bg-white border border-slate-200/70 text-sm text-[#0B2B26] shadow-2xs"
                       >
-                        <span
-                          className="mt-0.5 p-1 rounded-full text-white shrink-0 shadow-2xs"
-                          style={{ backgroundColor: activeArea.accentHex }}
-                        >
+                        <span className="mt-0.5 p-1 rounded-full bg-[#B4F26B] text-[#06302B] shrink-0">
                           <Check className="w-3 h-3 stroke-[3]" />
                         </span>
                         <span className="leading-snug">{item}</span>
@@ -202,18 +186,19 @@ export const FocusAreas: React.FC = () => {
               </div>
 
               {/* Bottom footer bar */}
-              <div className="pt-8 mt-8 border-t border-slate-100 flex flex-wrap items-center justify-between gap-4">
-                <div className="text-xs text-slate-500 italic">
+              <div className="pt-8 mt-8 border-t border-slate-200/80 flex flex-wrap items-center justify-between gap-4">
+                <div className="text-xs text-[#5B6B66] italic">
                   Institutional focus area strictly following NextGen governance standards.
                 </div>
                 <a
                   href="#contact"
                   onClick={() => handleInquireDiscipline(activeArea.title)}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full text-xs sm:text-sm font-semibold text-white shadow-xs hover:shadow-md transition-all duration-200 group cursor-pointer active:scale-[0.98]"
-                  style={{ backgroundColor: activeArea.accentHex }}
+                  className="btn-biztop-pill text-xs sm:text-sm font-bold shadow-md"
                 >
                   <span>Inquire about this discipline</span>
-                  <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                  <span className="arrow-chip">
+                    <ArrowRight className="w-3.5 h-3.5 stroke-[2.5]" />
+                  </span>
                 </a>
               </div>
 

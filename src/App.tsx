@@ -31,7 +31,7 @@ export const App: React.FC = () => {
   }
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-[#FAF9F6] text-[#0F172A] selection:bg-[#125EA2] selection:text-white w-full overflow-x-hidden">
+    <div className="relative min-h-screen flex flex-col bg-[#F7F6EC] text-[#0B2B26] selection:bg-[#B4F26B] selection:text-[#06302B] w-full overflow-x-hidden font-sans">
       {/* High-performance atmospheric canvas background */}
       <InteractiveBackground />
 

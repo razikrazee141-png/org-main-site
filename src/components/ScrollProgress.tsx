@@ -38,7 +38,7 @@ export const ScrollProgress: React.FC = () => {
       <button
         type="button"
         onClick={scrollToTop}
-        className="relative group w-12 h-12 rounded-full bg-white/90 hover:bg-white text-slate-700 hover:text-[#125EA2] shadow-lg hover:shadow-xl border border-slate-200/80 backdrop-blur-md flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer"
+        className="relative group w-12 h-12 rounded-full bg-[#06302B] hover:bg-[#09423b] text-white shadow-xl border border-white/20 backdrop-blur-xl flex items-center justify-center transition-all duration-200 active:scale-95 cursor-pointer"
         aria-label="Scroll back to top"
         title={`Scroll to top (${Math.round(scrollProgress)}%)`}
       >
@@ -49,7 +49,7 @@ export const ScrollProgress: React.FC = () => {
             cx="22"
             cy="22"
             r={radius}
-            className="text-slate-200/60"
+            className="text-white/15"
             strokeWidth="2.5"
             stroke="currentColor"
             fill="transparent"
@@ -59,7 +59,7 @@ export const ScrollProgress: React.FC = () => {
             cx="22"
             cy="22"
             r={radius}
-            className="text-[#125EA2] transition-all duration-75"
+            className="text-[#B4F26B] transition-all duration-75"
             strokeWidth="2.5"
             strokeDasharray={circumference}
             strokeDashoffset={strokeDashoffset}
@@ -69,7 +69,7 @@ export const ScrollProgress: React.FC = () => {
           />
         </svg>
 
-        <ArrowUp className="w-4 h-4 transition-transform duration-200 group-hover:-translate-y-0.5" />
+        <ArrowUp className="w-4 h-4 text-[#B4F26B] group-hover:text-white transition-all duration-200 group-hover:-translate-y-0.5" />
       </button>
     </div>
   );
