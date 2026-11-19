@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowDown, ArrowRight, Sparkles, ShieldCheck, Mail, Building2, ExternalLink } from 'lucide-react';
+import { ArrowDown, ArrowRight, Sparkles, Mail, Building2, ExternalLink } from 'lucide-react';
 import { BrandLogo } from '../brand/BrandLogo';
 import { SITE_CONFIG } from '../config/siteConfig';
 
@@ -241,12 +241,6 @@ export const Hero: React.FC = () => {
                       </div>
                       <p className="text-[10px] text-[#5B6B66] mt-0.5 truncate">Civic programs</p>
                     </a>
-                  </div>
-
-                  {/* Legal Corporate Identity Badge */}
-                  <div className="pt-2 text-[10px] text-[#5B6B66] font-mono tracking-tight flex items-center justify-center gap-1.5 border-t border-slate-100 w-full">
-                    <ShieldCheck className="w-3.5 h-3.5 text-[#06302B]" />
-                    <span>CIN: U62099KL2025PTC093375 &bull; Reg. 2025</span>
                   </div>
 
                 </div>
