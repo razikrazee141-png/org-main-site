@@ -11,7 +11,7 @@ export const AboutSection: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="max-w-3xl space-y-3.5">
+        <div className="max-w-3xl space-y-3.5 reveal">
           <div className="biztop-eyebrow">
             <Sparkles className="w-3.5 h-3.5 text-[#06302B] shrink-0 fill-[#06302B]" />
             <span>{about.badge}</span>
@@ -28,10 +28,10 @@ export const AboutSection: React.FC = () => {
         <div className="mt-14 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
           
           {/* Left Column: Purpose & Distinct Multidisciplinary Philosophy */}
-          <div className="lg:col-span-6 space-y-6">
+          <div className="lg:col-span-6 space-y-6 reveal reveal-delay-1">
             
             {/* Purpose Panel: 24px Rounded White Card */}
-            <div className="p-7 sm:p-8 rounded-[24px] biztop-card space-y-3.5">
+            <div className="p-7 sm:p-8 rounded-[24px] biztop-card card-hover-lift space-y-3.5">
               <div className="flex items-center gap-3">
                 <span className="w-10 h-10 rounded-full bg-[#B4F26B] text-[#06302B] flex items-center justify-center font-bold shadow-xs">
                   <Target className="w-5 h-5 stroke-[2.5]" />
@@ -44,7 +44,7 @@ export const AboutSection: React.FC = () => {
             </div>
 
             {/* Multidisciplinary Approach Panel: 24px Rounded White Card */}
-            <div className="p-7 sm:p-8 rounded-[24px] biztop-card space-y-3.5">
+            <div className="p-7 sm:p-8 rounded-[24px] biztop-card card-hover-lift space-y-3.5">
               <div className="flex items-center gap-3">
                 <span className="w-10 h-10 rounded-full bg-[#06302B] text-[#B4F26B] flex items-center justify-center font-bold shadow-xs">
                   <Layers className="w-5 h-5 stroke-[2.5]" />
@@ -57,7 +57,7 @@ export const AboutSection: React.FC = () => {
             </div>
 
             {/* Verified Statement Callout */}
-            <div className="p-6 rounded-[20px] bg-white border border-[#B4F26B]/50 border-l-4 border-l-[#06302B] text-xs sm:text-sm text-[#5B6B66] space-y-2 shadow-xs">
+            <div className="p-6 rounded-[20px] bg-white border border-[#B4F26B]/50 border-l-4 border-l-[#06302B] text-xs sm:text-sm text-[#5B6B66] space-y-2 shadow-xs card-hover-lift">
               <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#06302B]">
                 <Award className="w-4 h-4 text-[#06302B]" />
                 <span>Institutional Governance Standards</span>
@@ -70,7 +70,7 @@ export const AboutSection: React.FC = () => {
           </div>
 
           {/* Right Column: 4 Foundation Pillars */}
-          <div className="lg:col-span-6 space-y-3.5">
+          <div className="lg:col-span-6 space-y-3.5 reveal reveal-delay-2">
             <h3 className="text-xs font-bold uppercase tracking-widest text-[#5B6B66] mb-4 flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 text-[#06302B]" />
               <span>Core Strategic Foundations</span>

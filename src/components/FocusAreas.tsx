@@ -54,7 +54,7 @@ export const FocusAreas: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 sm:mb-14 reveal">
           <div className="max-w-2xl space-y-3">
             <div className="biztop-eyebrow">
               <Sparkles className="w-3.5 h-3.5 text-[#06302B] shrink-0 fill-[#06302B]" />
@@ -78,7 +78,7 @@ export const FocusAreas: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           
           {/* Left Column: List of 5 Areas */}
-          <div className="lg:col-span-5 space-y-3">
+          <div className="lg:col-span-5 space-y-3 reveal reveal-delay-1">
             {focusAreas.map((area) => {
               const isActive = area.id === activeAreaId;
 
@@ -126,15 +126,18 @@ export const FocusAreas: React.FC = () => {
           </div>
 
           {/* Right Column: Active Focus Area Detailed Stage */}
-          <div className="lg:col-span-7" id="focus-area-detail">
+          <div className="lg:col-span-7 reveal-scale reveal-delay-2" id="focus-area-detail">
             <div
               key={activeArea.id}
               className="rounded-[24px] sm:rounded-[28px] bg-[#F7F6EC] p-5 sm:p-8 lg:p-12 shadow-sm border border-slate-200/90 relative overflow-hidden transition-all duration-200 min-h-[auto] sm:min-h-[480px] flex flex-col justify-between animate-fadeIn"
             >
-              {/* Top Accent Line */}
+              {/* Top Accent Line with Shimmer */}
               <div
-                className="absolute top-0 left-0 right-0 h-1.5 bg-[#B4F26B]"
+                className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-[#B4F26B] via-[#E4FFB0] to-[#B4F26B] shadow-[0_0_12px_#B4F26B]"
               />
+
+              {/* Ambient radial lime corner glow */}
+              <div className="absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#B4F26B]/20 blur-3xl pointer-events-none" />
 
               <div className="space-y-6">
                 
@@ -172,7 +175,7 @@ export const FocusAreas: React.FC = () => {
                     {activeArea.scope.map((item, idx) => (
                       <div
                         key={idx}
-                        className="flex items-start gap-3 p-3.5 rounded-[16px] bg-white border border-slate-200/70 text-sm text-[#0B2B26] shadow-2xs"
+                        className="flex items-start gap-3 p-3.5 rounded-[16px] bg-white border border-slate-200/70 text-sm text-[#0B2B26] shadow-2xs transition-all duration-200 hover:translate-x-1 hover:border-[#B4F26B]/60 hover:shadow-sm"
                       >
                         <span className="mt-0.5 p-1 rounded-full bg-[#B4F26B] text-[#06302B] shrink-0">
                           <Check className="w-3 h-3 stroke-[3]" />

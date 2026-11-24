@@ -48,7 +48,7 @@ export const DirectorsShowcase: React.FC = () => {
       aria-label="NextGen Board of Directors"
     >
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10 reveal">
         <div className="space-y-2">
           <div className="biztop-eyebrow">
             <ShieldCheck className="w-3.5 h-3.5 text-[#06302B]" />
@@ -117,12 +117,12 @@ export const DirectorsShowcase: React.FC = () => {
         onMouseLeave={() => setIsPaused(false)}
         onTouchStart={() => setIsPaused(true)}
         onTouchEnd={() => setIsPaused(false)}
-        className="relative rounded-[24px] sm:rounded-[28px] bg-[#06302B] text-white p-5 sm:p-8 lg:p-12 shadow-2xl overflow-hidden border border-[#0A3D37]"
+        className="relative rounded-[24px] sm:rounded-[28px] bg-[#06302B] text-white p-5 sm:p-8 lg:p-12 shadow-2xl overflow-hidden border border-[#0A3D37] reveal-scale reveal-delay-1"
       >
         {/* Animated Lime Progress Bar along the top */}
-        <div className="absolute top-0 left-0 right-0 h-1 bg-white/10 overflow-hidden z-20">
+        <div className="absolute top-0 left-0 right-0 h-1.5 bg-white/10 overflow-hidden z-20">
           <div
-            className="h-full bg-[#B4F26B] transition-all duration-75"
+            className="h-full bg-gradient-to-r from-[#B4F26B] via-[#E4FFB0] to-[#B4F26B] shadow-[0_0_12px_#B4F26B] transition-all duration-75"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -134,10 +134,10 @@ export const DirectorsShowcase: React.FC = () => {
             <div className="relative group/photo w-full flex justify-center">
               
               {/* Soft Lime Glow behind the Active Frame */}
-              <div className="absolute -inset-3 rounded-[28px] bg-[#B4F26B]/20 blur-xl opacity-75 pointer-events-none" />
+              <div className="absolute -inset-3 rounded-[28px] bg-[#B4F26B]/25 blur-xl pointer-events-none animate-pulse-glow" />
 
               {/* Uniform Frame Container: 24px Radius, Zero Layout Shift */}
-              <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-[4/5] rounded-[24px] overflow-hidden bg-slate-900 border-2 border-[#B4F26B] shadow-2xl">
+              <div className="relative w-full max-w-[280px] sm:max-w-[320px] aspect-[4/5] rounded-[24px] overflow-hidden bg-slate-900 border-2 border-[#B4F26B] shadow-2xl transition-transform duration-500 group-hover/photo:scale-[1.02]">
                 {directors.map((director, index) => {
                   const isActive = index === currentIndex;
                   return (

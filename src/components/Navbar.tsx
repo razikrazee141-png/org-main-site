@@ -141,7 +141,7 @@ export const Navbar: React.FC = () => {
                   <a
                     key={item.id}
                     href={item.href}
-                    className={`px-4 py-2 text-sm font-semibold tracking-tight transition-colors duration-150 relative ${
+                    className={`px-4 py-2 text-sm font-semibold tracking-tight transition-colors duration-150 relative group ${
                       isActive
                         ? 'text-[#B4F26B]'
                         : 'text-white hover:text-[#B4F26B]'
@@ -149,8 +149,10 @@ export const Navbar: React.FC = () => {
                     aria-current={isActive ? 'page' : undefined}
                   >
                     <span>{item.label}</span>
-                    {isActive && (
-                      <span className="absolute bottom-0 left-4 right-4 h-0.5 bg-[#B4F26B] rounded-full" />
+                    {isActive ? (
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#B4F26B] rounded-full shadow-[0_0_8px_#B4F26B]" />
+                    ) : (
+                      <span className="absolute bottom-0 left-3 right-3 h-0.5 bg-[#B4F26B] rounded-full scale-x-0 group-hover:scale-x-100 transition-transform duration-200 origin-left opacity-75" />
                     )}
                   </a>
                 );

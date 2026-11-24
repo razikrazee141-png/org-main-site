@@ -19,7 +19,8 @@ import {
   BadgeCheck,
   RotateCcw,
   Sparkles,
-  ArrowRight
+  ArrowRight,
+  User
 } from 'lucide-react';
 import { SITE_CONFIG } from '../config/siteConfig';
 import { isSupabaseConfigured, submitInquiryToSupabase } from '../lib/supabase';
@@ -154,8 +155,6 @@ export const ContactSection: React.FC = () => {
 
     if (!formData.message.trim()) {
       newErrors.message = 'Please enter your message.';
-    } else if (formData.message.trim().length < 15) {
-      newErrors.message = 'Please provide a little more detail (at least 15 characters).';
     }
 
     setErrors(newErrors);
@@ -290,7 +289,7 @@ export const ContactSection: React.FC = () => {
       <div className="max-w-7xl mx-auto">
         
         {/* Section Header */}
-        <div className="max-w-3xl space-y-3.5 mb-10 sm:mb-14">
+        <div className="max-w-3xl space-y-3.5 mb-10 sm:mb-14 reveal">
           <div className="biztop-eyebrow">
             <Sparkles className="w-3.5 h-3.5 text-[#06302B] shrink-0 fill-[#06302B]" />
             <span>Official Secretariat Gateway</span>
@@ -306,7 +305,7 @@ export const ContactSection: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           
           {/* Left Column: Official Contact Channels */}
-          <div className="lg:col-span-5 space-y-5">
+          <div className="lg:col-span-5 space-y-5 reveal reveal-delay-1">
             
             <div className="space-y-3.5">
               <h3 className="text-xs font-bold uppercase tracking-widest text-[#5B6B66] flex items-center gap-2">
@@ -423,29 +422,44 @@ export const ContactSection: React.FC = () => {
 
           </div>
 
-          {/* Right Column: Biztop 24px Rounded Card Enquiry Form */}
-          <div className="lg:col-span-7">
-            <div className="bg-white rounded-[24px] sm:rounded-[28px] p-5 sm:p-8 lg:p-10 shadow-lg border border-slate-200/90 relative overflow-hidden">
+          {/* Right Column: Official Corporate Secretariat Enquiry Form */}
+          <div className="lg:col-span-7 reveal-scale reveal-delay-2">
+            <div className="bg-white rounded-[24px] sm:rounded-[28px] shadow-2xl border border-slate-300/80 relative overflow-hidden">
               
-              {/* Header Bar */}
-              <div className="mb-6 pb-4 border-b border-slate-200/80 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <span className="w-2.5 h-2.5 rounded-full bg-[#B4F26B]" />
-                  <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#06302B]">
-                    FORM NXG-SEC/2026-ENQ
-                  </span>
-                  <span className="text-slate-400 hidden sm:inline">&bull;</span>
-                  <span className="text-xs text-[#5B6B66] hidden sm:inline">Secretariat Intake</span>
+              {/* Official Secretarial Header Band */}
+              <div className="bg-[#06302B] text-white p-5 sm:p-6 border-b border-[#0A3D37]">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center shrink-0">
+                      <ShieldCheck className="w-5 h-5 text-[#B4F26B]" />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-[#B4F26B] animate-pulse" />
+                        <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-[#B4F26B]">
+                          Official Secretariat Registry
+                        </span>
+                      </div>
+                      <h3 className="text-sm sm:text-base font-bold text-white tracking-tight mt-0.5">
+                        Government & Corporate Inquiry Gateway
+                      </h3>
+                    </div>
+                  </div>
+
+                  <div className="inline-flex items-center gap-2 self-start sm:self-auto px-3 py-1 rounded-full bg-white/[0.08] border border-white/15 text-[11px] font-mono text-slate-200">
+                    <Lock className="w-3.5 h-3.5 text-[#B4F26B]" />
+                    <span>256-Bit SSL Encrypted</span>
+                  </div>
                 </div>
 
-                <div className="inline-flex items-center gap-1.5 text-[11px] font-bold text-[#06302B] bg-[#B4F26B]/30 px-3 py-1 rounded-full border border-[#B4F26B]">
-                  <Lock className="w-3 h-3 text-[#06302B]" />
-                  <span>256-Bit Encrypted Protocol</span>
+                <div className="mt-3 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-300 font-mono">
+                  <span>DOCUMENT REF: NXG-SEC/2026-ENQ</span>
+                  <span className="text-[#B4F26B] font-semibold">SECRETARIAL INTAKE &bull; VERIFIED RECEPTION</span>
                 </div>
               </div>
 
               {/* Form Content / Success State */}
-              <div>
+              <div className="p-6 sm:p-8 lg:p-10">
                 {status === 'success' ? (
                   <div className="py-10 px-4 sm:px-8 text-center space-y-5 animate-fadeIn">
                     <div className="w-16 h-16 rounded-full bg-[#B4F26B] text-[#06302B] flex items-center justify-center mx-auto shadow-md">
@@ -476,7 +490,7 @@ export const ContactSection: React.FC = () => {
                     </div>
                   </div>
                 ) : (
-                  <form onSubmit={handleSubmit} noValidate className="space-y-5">
+                  <form onSubmit={handleSubmit} noValidate className="space-y-6">
                     {/* Anti-spam honeypot */}
                     <div className="hidden" aria-hidden="true">
                       <input
@@ -499,224 +513,288 @@ export const ContactSection: React.FC = () => {
                         </div>
                       </div>
                     )}
-                    
-                    {/* Name & Organization */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="contact-name" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
-                          Full Name <span className="text-red-500">*</span>
+
+                    {/* Section 01: Correspondent Particulars */}
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-2.5 pb-2 border-b border-slate-200 text-xs font-mono font-bold uppercase tracking-wider text-[#06302B]">
+                        <span className="w-5 h-5 rounded-full bg-[#06302B] text-[#B4F26B] inline-flex items-center justify-center text-[10px] font-black">
+                          1
+                        </span>
+                        <span>Correspondent Particulars</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="contact-name" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
+                            Full Name <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5B6B66]">
+                              <User className="w-4 h-4" />
+                            </div>
+                            <input
+                              id="contact-name"
+                              type="text"
+                              value={formData.name}
+                              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                              placeholder="e.g. Ayesha Rahman"
+                              className={`biztop-input has-icon w-full pl-10 pr-3.5 bg-white border border-slate-300 focus:border-[#06302B] focus:ring-2 focus:ring-[#B4F26B] font-medium text-sm text-[#0B2B26] shadow-2xs ${
+                                errors.name ? 'border-rose-400 bg-rose-50/50' : ''
+                              }`}
+                              aria-invalid={!!errors.name}
+                              aria-describedby={errors.name ? 'name-error' : undefined}
+                            />
+                          </div>
+                          {errors.name && (
+                            <p id="name-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                              <span>{errors.name}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <label htmlFor="contact-org" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
+                              Organization / Entity
+                            </label>
+                            <span className="text-[10px] uppercase text-[#5B6B66] font-mono bg-slate-100 px-2 py-0.5 rounded">Optional</span>
+                          </div>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5B6B66]">
+                              <Building2 className="w-4 h-4" />
+                            </div>
+                            <input
+                              id="contact-org"
+                              type="text"
+                              value={formData.organization}
+                              onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
+                              placeholder="e.g. Civic Trust / Institution"
+                              className="biztop-input has-icon w-full pl-10 pr-3.5 bg-white border border-slate-300 focus:border-[#06302B] focus:ring-2 focus:ring-[#B4F26B] font-medium text-sm text-[#0B2B26] shadow-2xs"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Email and Phone Row */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                          <label htmlFor="contact-email" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
+                            Official Email <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5B6B66]">
+                              <Mail className="w-4 h-4" />
+                            </div>
+                            <input
+                              id="contact-email"
+                              type="email"
+                              value={formData.email}
+                              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                              placeholder="e.g. name@domain.com"
+                              className={`biztop-input has-icon w-full pl-10 pr-3.5 bg-white border border-slate-300 focus:border-[#06302B] focus:ring-2 focus:ring-[#B4F26B] font-medium text-sm text-[#0B2B26] shadow-2xs ${
+                                errors.email ? 'border-rose-400 bg-rose-50/50' : ''
+                              }`}
+                              aria-invalid={!!errors.email}
+                              aria-describedby={errors.email ? 'email-error' : undefined}
+                            />
+                          </div>
+                          {errors.email && (
+                            <p id="email-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                              <span>{errors.email}</span>
+                            </p>
+                          )}
+                        </div>
+
+                        <div>
+                          <label htmlFor="contact-phone" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
+                            Contact Phone <span className="text-red-500">*</span>
+                          </label>
+                          <div className="relative">
+                            <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#5B6B66]">
+                              <Phone className="w-4 h-4" />
+                            </div>
+                            <input
+                              id="contact-phone"
+                              type="tel"
+                              value={formData.phone}
+                              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                              placeholder="e.g. +91 98765 43210"
+                              className={`biztop-input has-icon w-full pl-10 pr-3.5 bg-white border border-slate-300 focus:border-[#06302B] focus:ring-2 focus:ring-[#B4F26B] font-medium text-sm text-[#0B2B26] shadow-2xs ${
+                                errors.phone ? 'border-rose-400 bg-rose-50/50' : ''
+                              }`}
+                              aria-invalid={!!errors.phone}
+                              aria-describedby={errors.phone ? 'phone-error' : undefined}
+                            />
+                          </div>
+                          {errors.phone && (
+                            <p id="phone-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+                              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                              <span>{errors.phone}</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 02: Disciplinary Domain Classification */}
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center gap-2.5 pb-2 border-b border-slate-200 text-xs font-mono font-bold uppercase tracking-wider text-[#06302B]">
+                        <span className="w-5 h-5 rounded-full bg-[#06302B] text-[#B4F26B] inline-flex items-center justify-center text-[10px] font-black">
+                          2
+                        </span>
+                        <span>Disciplinary Domain Classification</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label htmlFor="contact-subject" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
+                          Select Focus Area <span className="text-red-500">*</span>
                         </label>
-                        <input
-                          id="contact-name"
-                          type="text"
-                          value={formData.name}
-                          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                          placeholder="e.g. Ayesha Rahman"
-                          className={`biztop-input w-full ${
-                            errors.name ? 'border-rose-400 bg-rose-50/50' : ''
-                          }`}
-                          aria-invalid={!!errors.name}
-                          aria-describedby={errors.name ? 'name-error' : undefined}
-                        />
-                        {errors.name && (
-                          <p id="name-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+
+                        {/* Quick Structured Matrix Selector */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                          {QUICK_SUBJECTS.map((chip) => {
+                            const isSelected = formData.subject === chip.value;
+                            const ChipIcon = chip.icon;
+                            return (
+                              <button
+                                key={chip.value}
+                                type="button"
+                                onClick={() => {
+                                  setFormData((prev) => ({ ...prev, subject: chip.value }));
+                                  setErrors((prev) => ({ ...prev, subject: undefined }));
+                                }}
+                                className={`flex items-center justify-between p-3 rounded-xl text-xs font-bold transition-all duration-150 cursor-pointer border text-left ${
+                                  isSelected
+                                    ? 'bg-[#06302B] text-white border-[#06302B] shadow-sm'
+                                    : 'bg-[#F7F6EC]/80 hover:bg-slate-100 text-[#0B2B26] border-slate-200'
+                                }`}
+                              >
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <ChipIcon className={`w-3.5 h-3.5 shrink-0 ${isSelected ? 'text-[#B4F26B]' : 'text-[#06302B]'}`} />
+                                  <span className="truncate">{chip.label}</span>
+                                </div>
+                                <span className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 border ml-2 ${
+                                  isSelected ? 'bg-[#B4F26B] border-[#B4F26B] text-[#06302B]' : 'border-slate-300 bg-white'
+                                }`}>
+                                  {isSelected && <Check className="w-2.5 h-2.5 stroke-[3]" />}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+
+                        {/* Standard Formal Select Dropdown */}
+                        <div className="pt-1">
+                          <select
+                            id="contact-subject"
+                            value={formData.subject}
+                            onChange={(e) => {
+                              setFormData({ ...formData, subject: e.target.value });
+                              setErrors({ ...errors, subject: undefined });
+                            }}
+                            className={`biztop-input w-full bg-white border border-slate-300 text-xs font-semibold text-[#0B2B26] ${
+                              errors.subject ? 'border-rose-400 bg-rose-50/50' : ''
+                            }`}
+                            aria-invalid={!!errors.subject}
+                            aria-describedby={errors.subject ? 'subject-error' : undefined}
+                          >
+                            <option value="">Or choose specific institutional subject</option>
+                            <option value="General Corporate Inquiry">General Corporate Inquiry</option>
+                            <option value="Software Services">Software Services</option>
+                            <option value="Education & Digital Skills">Education & Digital Skills</option>
+                            <option value="Social Services & Public Assistance">Social Services & Public Assistance</option>
+                            <option value="Community Development Collaboration">Community Development Collaboration</option>
+                            <option value="Institutional Partnership">Institutional Partnership</option>
+                          </select>
+                        </div>
+                        {errors.subject && (
+                          <p id="subject-error" className="text-xs text-rose-600 mt-1 flex items-center gap-1 font-mono">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>{errors.name}</span>
+                            <span>{errors.subject}</span>
                           </p>
                         )}
+                      </div>
+                    </div>
+
+                    {/* Section 03: Communication Brief */}
+                    <div className="space-y-3 pt-1">
+                      <div className="flex items-center gap-2.5 pb-2 border-b border-slate-200 text-xs font-mono font-bold uppercase tracking-wider text-[#06302B]">
+                        <span className="w-5 h-5 rounded-full bg-[#06302B] text-[#B4F26B] inline-flex items-center justify-center text-[10px] font-black">
+                          3
+                        </span>
+                        <span>Communication Brief</span>
                       </div>
 
                       <div>
                         <div className="flex items-center justify-between mb-2">
-                          <label htmlFor="contact-org" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
-                            Organization
+                          <label htmlFor="contact-message" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
+                            Official Message / Proposal <span className="text-red-500">*</span>
                           </label>
-                          <span className="text-[10px] uppercase text-[#5B6B66] font-mono">Optional</span>
+                          <span className="text-[11px] font-mono text-[#5B6B66] bg-slate-100 px-2 py-0.5 rounded">
+                            {formData.message.length}/5000
+                          </span>
                         </div>
-                        <input
-                          id="contact-org"
-                          type="text"
-                          value={formData.organization}
-                          onChange={(e) => setFormData({ ...formData, organization: e.target.value })}
-                          placeholder="e.g. Civic Trust / Institution"
-                          className="biztop-input w-full"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Email and Phone Row */}
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                      <div>
-                        <label htmlFor="contact-email" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
-                          Email Address <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          id="contact-email"
-                          type="email"
-                          value={formData.email}
-                          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                          placeholder="e.g. name@domain.com"
-                          className={`biztop-input w-full ${
-                            errors.email ? 'border-rose-400 bg-rose-50/50' : ''
+                        <textarea
+                          id="contact-message"
+                          rows={4}
+                          value={formData.message}
+                          onChange={(e) => {
+                            setFormData({ ...formData, message: e.target.value });
+                            if (e.target.value.trim().length > 0) {
+                              setErrors({ ...errors, message: undefined });
+                            }
+                          }}
+                          placeholder="Provide details regarding your organization, inquiry, proposal, or formal correspondence..."
+                          className={`w-full p-4 rounded-xl bg-white border border-slate-300 text-sm text-[#0B2B26] placeholder:text-[#5B6B66] focus:outline-none focus:border-[#06302B] focus:ring-2 focus:ring-[#B4F26B] transition-all resize-y shadow-2xs font-normal leading-relaxed ${
+                            errors.message ? 'border-rose-400 bg-rose-50/50' : ''
                           }`}
-                          aria-invalid={!!errors.email}
-                          aria-describedby={errors.email ? 'email-error' : undefined}
+                          aria-invalid={!!errors.message}
+                          aria-describedby={errors.message ? 'message-error' : undefined}
                         />
-                        {errors.email && (
-                          <p id="email-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
+                        {errors.message && (
+                          <p id="message-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
                             <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>{errors.email}</span>
-                          </p>
-                        )}
-                      </div>
-
-                      <div>
-                        <label htmlFor="contact-phone" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] mb-2 font-mono">
-                          Contact Phone <span className="text-red-500">*</span>
-                        </label>
-                        <input
-                          id="contact-phone"
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                          placeholder="e.g. +91 98765 43210"
-                          className={`biztop-input w-full ${
-                            errors.phone ? 'border-rose-400 bg-rose-50/50' : ''
-                          }`}
-                          aria-invalid={!!errors.phone}
-                          aria-describedby={errors.phone ? 'phone-error' : undefined}
-                        />
-                        {errors.phone && (
-                          <p id="phone-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
-                            <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                            <span>{errors.phone}</span>
+                            <span>{errors.message}</span>
                           </p>
                         )}
                       </div>
                     </div>
 
-                    {/* Quick Subject Chips with Pill Radii & Professional Icons */}
-                    <div className="space-y-2">
-                      <label htmlFor="contact-subject" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
-                        Subject / Focus Discipline <span className="text-red-500">*</span>
-                      </label>
-
-                      <div className="flex flex-wrap gap-1.5 pt-0.5">
-                        {QUICK_SUBJECTS.map((chip) => {
-                          const isSelected = formData.subject === chip.value;
-                          const ChipIcon = chip.icon;
-                          return (
-                            <button
-                              key={chip.value}
-                              type="button"
-                              onClick={() => {
-                                setFormData((prev) => ({ ...prev, subject: chip.value }));
-                                setErrors((prev) => ({ ...prev, subject: undefined }));
-                              }}
-                              className={`inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-bold transition-all duration-150 cursor-pointer ${
-                                isSelected
-                                  ? 'bg-[#B4F26B] text-[#06302B] shadow-xs'
-                                  : 'bg-[#F7F6EC] hover:bg-slate-200/60 text-[#0B2B26] border border-slate-200'
-                              }`}
-                            >
-                              <ChipIcon className="w-3.5 h-3.5 text-[#06302B]" />
-                              <span>{chip.label}</span>
-                              {isSelected && <Check className="w-3 h-3 text-[#06302B] ml-0.5 stroke-[3]" />}
-                            </button>
-                          );
-                        })}
-                      </div>
-
-                      <select
-                        id="contact-subject"
-                        value={formData.subject}
-                        onChange={(e) => {
-                          setFormData({ ...formData, subject: e.target.value });
-                          setErrors({ ...errors, subject: undefined });
-                        }}
-                        className={`biztop-input w-full ${
-                          errors.subject ? 'border-rose-400' : ''
-                        }`}
-                        aria-invalid={!!errors.subject}
-                        aria-describedby={errors.subject ? 'subject-error' : undefined}
-                      >
-                        <option value="">Select an inquiry category</option>
-                        <option value="General Corporate Inquiry">General Corporate Inquiry</option>
-                        <option value="Software Services">Software Services</option>
-                        <option value="Education & Digital Skills">Education & Digital Skills</option>
-                        <option value="Social Services & Public Assistance">Social Services & Public Assistance</option>
-                        <option value="Community Development Collaboration">Community Development Collaboration</option>
-                        <option value="Institutional Partnership">Institutional Partnership</option>
-                      </select>
-                      {errors.subject && (
-                        <p id="subject-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
-                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                          <span>{errors.subject}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Message Field with Live Character Counter */}
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label htmlFor="contact-message" className="block text-xs font-bold uppercase tracking-wider text-[#06302B] font-mono">
-                          Inquiry Message <span className="text-red-500">*</span>
-                        </label>
-                        <span className={`text-[11px] font-mono ${formData.message.length >= 15 ? 'text-[#5B6B66]' : 'text-amber-700 font-bold'}`}>
-                          {formData.message.length}/5000 {formData.message.length < 15 && '(min 15 chars)'}
-                        </span>
-                      </div>
-                      <textarea
-                        id="contact-message"
-                        rows={4}
-                        value={formData.message}
-                        onChange={(e) => {
-                          setFormData({ ...formData, message: e.target.value });
-                          if (e.target.value.trim().length >= 15) {
-                            setErrors({ ...errors, message: undefined });
-                          }
-                        }}
-                        placeholder="Please share details regarding your organization, proposal, or inquiry..."
-                        className={`w-full p-3.5 rounded-[14px] bg-[#F7F6EC] border text-sm text-[#0B2B26] placeholder:text-[#5B6B66] focus:outline-none focus:border-[#B4F26B] focus:ring-3 focus:ring-[#B4F26B]/50 focus:bg-white transition-all resize-y ${
-                          errors.message ? 'border-rose-400 bg-rose-50/50' : 'border-slate-300/80'
-                        }`}
-                        aria-invalid={!!errors.message}
-                        aria-describedby={errors.message ? 'message-error' : undefined}
-                      />
-                      {errors.message && (
-                        <p id="message-error" className="text-xs text-rose-600 mt-1.5 flex items-center gap-1 font-mono">
-                          <AlertCircle className="w-3.5 h-3.5 shrink-0" />
-                          <span>{errors.message}</span>
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Submit Button: Biztop Pill with Circular Arrow Chip */}
-                    <div>
+                    {/* Official Dispatch Action */}
+                    <div className="pt-2 space-y-3">
                       <button
                         type="submit"
                         disabled={status === 'submitting'}
-                        className="btn-biztop-pill w-full h-[52px] text-base font-bold shadow-md disabled:opacity-60"
+                        className="btn-biztop-pill w-full h-[54px] text-base font-bold shadow-md disabled:opacity-60 cursor-pointer justify-between px-6"
                       >
                         {status === 'submitting' ? (
-                          <>
+                          <div className="flex items-center justify-center gap-2 w-full">
                             <span className="w-4 h-4 border-2 border-[#06302B]/40 border-t-[#06302B] rounded-full animate-spin" />
                             <span>Submitting...</span>
-                          </>
+                          </div>
                         ) : (
                           <>
-                            <span>Submit</span>
+                            <div className="flex items-center gap-2">
+                              <ShieldCheck className="w-4 h-4 text-[#06302B]" />
+                              <span>Submit</span>
+                            </div>
                             <span className="arrow-chip">
                               <ArrowRight className="w-4 h-4 stroke-[2.5]" />
                             </span>
                           </>
                         )}
                       </button>
-                    </div>
 
-                    <p className="text-[11px] text-[#5B6B66] text-center pt-1 font-mono">
-                      Submissions are handled securely by NextGen governance.
-                    </p>
+                      <div className="p-3 rounded-xl bg-[#F7F6EC] border border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-2 text-[11px] text-[#5B6B66] font-mono">
+                        <span className="flex items-center gap-1.5 text-[#06302B] font-semibold">
+                          <Lock className="w-3 h-3 text-[#06302B]" />
+                          <span>NextGen Corporate Registry Protocol</span>
+                        </span>
+                        <span>Official Confidentiality Assured</span>
+                      </div>
+                    </div>
 
                   </form>
                 )}

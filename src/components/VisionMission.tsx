@@ -10,10 +10,14 @@ export const VisionMission: React.FC = () => {
       id="vision-mission"
       className="py-14 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 relative bg-[#06302B] text-white overflow-hidden"
     >
+      {/* Floating Section Background Ambient Orbs */}
+      <div className="absolute top-10 -left-20 w-80 h-80 rounded-full bg-[#B4F26B]/10 blur-[100px] pointer-events-none animate-float" />
+      <div className="absolute -bottom-10 -right-20 w-96 h-96 rounded-full bg-[#0D4A41]/50 blur-[120px] pointer-events-none animate-float-reverse" />
+
       <div className="max-w-7xl mx-auto relative z-10">
         
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-10 sm:mb-16">
+        <div className="text-center max-w-3xl mx-auto space-y-4 mb-10 sm:mb-16 reveal">
           <div className="biztop-eyebrow-dark">
             <Sparkles className="w-3.5 h-3.5 text-[#B4F26B] shrink-0 fill-[#B4F26B]" />
             <span>Strategic Direction & Institutional Mandate</span>
@@ -30,7 +34,7 @@ export const VisionMission: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10">
           
           {/* Vision Card */}
-          <div className="rounded-[24px] sm:rounded-[28px] p-6 sm:p-10 lg:p-12 bg-[#0A3D37] border border-white/10 flex flex-col justify-between relative group hover:border-[#B4F26B]/50 transition-all duration-300 shadow-xl">
+          <div className="rounded-[24px] sm:rounded-[28px] p-6 sm:p-10 lg:p-12 bg-[#0A3D37] border border-white/10 flex flex-col justify-between relative group hover:border-[#B4F26B]/50 transition-all duration-300 shadow-xl reveal-scale reveal-delay-1 card-hover-lift glow-card">
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
@@ -64,7 +68,7 @@ export const VisionMission: React.FC = () => {
           </div>
 
           {/* Mission Card */}
-          <div className="rounded-[24px] sm:rounded-[28px] p-6 sm:p-10 lg:p-12 bg-[#0A3D37] border border-white/10 flex flex-col justify-between relative group hover:border-[#B4F26B]/50 transition-all duration-300 shadow-xl">
+          <div className="rounded-[24px] sm:rounded-[28px] p-6 sm:p-10 lg:p-12 bg-[#0A3D37] border border-white/10 flex flex-col justify-between relative group hover:border-[#B4F26B]/50 transition-all duration-300 shadow-xl reveal-scale reveal-delay-2 card-hover-lift glow-card">
             <div className="space-y-6">
               <div className="flex items-center justify-between pb-4 border-b border-white/10">
                 <div className="flex items-center gap-3">
